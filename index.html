@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AEGIS SOC Engine v3 — Arnab Kumar Das</title>
+<meta name="description" content="AI-powered website &amp; email security intelligence platform"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+/* ════════════════════════════════════════════════════════════
+   AEGIS SOC ENGINE v3  ·  Design System
+   Industrial dark / brutalist cyber aesthetic
+════════════════════════════════════════════════════════════ */
+:root{
+  --void:    #010306;
+  --deep:    #040c14;
+  --surface: #060f1a;
+  --raised:  #091522;
+  --lift:    #0d1e2e;
+  --stroke:  #0f2a3e;
+  --stroke2: #183a52;
+  --cyan:    #00e5ff;
+  --lime:    #39ff14;
+  --red:     #ff2d55;
+  --amber:   #ffa500;
+  --yellow:  #ffe500;
+  --text:    #a8cce0;
+  --muted:   #2e5872;
+  --white:   #e8f4ff;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'Syne', sans-serif;
+  --hd:      'Orbitron', monospace;
+  --r:       4px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--void);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+
+/* Grid overlay */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,229,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.018) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--deep);}
+::-webkit-scrollbar-thumb{background:var(--stroke2);}
+
+/* ── NAV ───────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  height:58px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 1.6rem;
+  background:rgba(1,3,6,.96);border-bottom:1px solid var(--stroke);
+  backdrop-filter:blur(20px);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--hd);font-size:1rem;font-weight:900;
+  color:var(--cyan);letter-spacing:4px;
+  text-shadow:0 0 20px rgba(0,229,255,.4);
+}
+.logo-hex{
+  width:32px;height:32px;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:rgba(0,229,255,.08);border:1px solid var(--cyan);
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+  animation:hexPulse 3s ease-in-out infinite;
+}
+@keyframes hexPulse{
+  0%,100%{box-shadow:0 0 6px rgba(0,229,255,.2);}
+  50%{box-shadow:0 0 24px rgba(0,229,255,.6),0 0 48px rgba(0,229,255,.12);}
+}
+.nav-links{display:flex;}
+.ntab{
+  padding:0 16px;height:58px;display:flex;align-items:center;
+  font-family:var(--mono);font-size:.65rem;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;
+  background:none;border:none;border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:color .2s,border-color .2s;
+}
+.ntab:hover{color:var(--cyan);}
+.ntab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.nav-right{display:flex;gap:8px;align-items:center;}
+.gh-link{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.18);
+  border-radius:var(--r);padding:5px 12px;
+  font-family:var(--mono);font-size:.65rem;
+  color:var(--cyan);text-decoration:none;letter-spacing:1px;transition:all .2s;
+}
+.gh-link:hover{background:rgba(0,229,255,.1);box-shadow:0 0 20px rgba(0,229,255,.15);}
+.nbtn{
+  padding:6px 14px;border-radius:var(--r);
+  font-family:var(--mono);font-size:.63rem;font-weight:500;
+  letter-spacing:1px;cursor:pointer;transition:all .2s;border:1px solid;
+}
+.nbtn-ghost{background:transparent;border-color:var(--muted);color:var(--muted);}
+.nbtn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+.nbtn-solid{background:rgba(0,229,255,.1);border-color:var(--cyan);color:var(--cyan);}
+.nbtn-solid:hover{background:rgba(0,229,255,.2);}
+.nbtn-out{background:rgba(255,45,85,.07);border-color:var(--red);color:var(--red);}
+.nbtn-out:hover{background:rgba(255,45,85,.14);}
+
+/* ── PAGES ─────────────────────────────────────────────────── */
+.page{display:none;position:relative;z-index:1;min-height:calc(100vh - 58px);}
+.page.active{display:block;}
+.wrap{max-width:1280px;margin:0 auto;padding:76px 1.4rem 4rem;}
+
+/* ── SHARED COMPONENTS ─────────────────────────────────────── */
+.panel{
+  background:var(--surface);border:1px solid var(--stroke);
+  border-radius:var(--r);position:relative;overflow:hidden;
+}
+.panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--cyan),transparent);opacity:.25;
+}
+.panel-body{padding:1.3rem;}
+
+.sec-lbl{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:3px;
+  text-transform:uppercase;color:var(--cyan);margin-bottom:.9rem;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-lbl::before{content:'';width:3px;height:13px;background:var(--cyan);border-radius:1px;}
+
+/* Grid helpers */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;}
+.g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.7rem;}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr;}.nav-links .ntab:nth-child(n+3){display:none;}}
+
+/* Status pills */
+.pills{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.2rem;}
+.pill{
+  display:flex;align-items:center;gap:5px;
+  border-radius:2px;padding:4px 12px;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:1px;
+}
+.pill-green{background:rgba(57,255,20,.04);border:1px solid rgba(57,255,20,.12);color:var(--lime);}
+.pill-cyan {background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.12);color:var(--cyan);}
+.pill-amber{background:rgba(255,165,0,.04); border:1px solid rgba(255,165,0,.12); color:var(--amber);}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.8s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.1;}}
+
+/* Stat tiles */
+.tile{
+  background:var(--surface);border:1px solid var(--stroke);
+  border-radius:var(--r);padding:1.1rem;position:relative;
+  overflow:hidden;transition:border-color .2s,transform .15s;
+}
+.tile:hover{border-color:var(--stroke2);transform:translateY(-2px);}
+.tile::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--cyan),transparent);opacity:.15;
+}
+.tile-lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
+.tile-val{font-family:var(--hd);font-size:1.9rem;font-weight:900;line-height:1;color:var(--white);}
+.tile-sub{font-family:var(--mono);font-size:.63rem;color:var(--muted);margin-top:.3rem;}
+
+/* Risk chart */
+.rrow{display:flex;align-items:center;gap:.7rem;margin-bottom:.55rem;}
+.rlbl{width:65px;font-family:var(--mono);font-size:.62rem;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;}
+.rtrack{flex:1;height:5px;background:var(--lift);border-radius:2px;overflow:hidden;}
+.rfill{height:100%;border-radius:2px;transition:width 1s ease;}
+.rcnt{font-family:var(--mono);font-size:.63rem;color:var(--muted);width:28px;text-align:right;flex-shrink:0;}
+.rc-crit{color:var(--red);}   .rf-crit{background:var(--red);}
+.rc-high{color:var(--amber);} .rf-high{background:var(--amber);}
+.rc-med{color:var(--yellow);} .rf-med{background:var(--yellow);}
+.rc-low{color:var(--lime);}   .rf-low{background:var(--lime);}
+
+/* Recent scans table */
+.stbl{width:100%;border-collapse:collapse;}
+.stbl th{padding:7px 10px;text-align:left;font-family:var(--mono);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--stroke);}
+.stbl td{padding:7px 10px;font-family:var(--mono);font-size:.68rem;border-bottom:1px solid rgba(15,42,62,.35);}
+.stbl tr:hover td{background:rgba(13,30,46,.4);}
+
+/* Badges */
+.bdg{padding:2px 8px;border-radius:2px;font-size:.58rem;font-weight:700;letter-spacing:1px;}
+.b-crit{background:rgba(255,45,85,.12);color:var(--red);   border:1px solid rgba(255,45,85,.2);}
+.b-high{background:rgba(255,165,0,.1); color:var(--amber); border:1px solid rgba(255,165,0,.2);}
+.b-med {background:rgba(255,229,0,.06);color:var(--yellow);border:1px solid rgba(255,229,0,.15);}
+.b-low {background:rgba(57,255,20,.06);color:var(--lime);  border:1px solid rgba(57,255,20,.12);}
+
+/* ── SCAN PAGE ─────────────────────────────────────────────── */
+.hero{text-align:center;padding:2.8rem 0 2.2rem;}
+.hero-eye{
+  display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:.63rem;letter-spacing:4px;
+  color:var(--lime);text-transform:uppercase;margin-bottom:1.1rem;
+}
+.hero-eye::before,.hero-eye::after{content:'';width:28px;height:1px;background:var(--lime);opacity:.4;}
+.hero-h1{
+  font-family:var(--hd);font-size:clamp(1.9rem,5.5vw,3.6rem);
+  font-weight:900;line-height:1.05;color:var(--white);
+  text-shadow:0 0 60px rgba(0,229,255,.15);margin-bottom:.75rem;
+}
+.hero-h1 em{color:var(--cyan);font-style:normal;}
+.hero-p{font-family:var(--mono);font-size:.76rem;color:var(--muted);max-width:500px;margin:0 auto 2.2rem;line-height:1.85;letter-spacing:.4px;}
+
+/* Scan tabs */
+.scan-tabs{display:flex;border-bottom:1px solid var(--stroke);margin-bottom:1.3rem;}
+.stab{
+  padding:9px 22px;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);
+  cursor:pointer;background:none;border:none;
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;
+}
+.stab:hover{color:var(--cyan);}
+.stab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+
+/* Input group */
+.igrp{display:flex;gap:.8rem;flex-wrap:wrap;}
+.ibox{flex:1;min-width:250px;position:relative;}
+.ipfx{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:.68rem;color:var(--cyan);
+  opacity:.6;pointer-events:none;white-space:nowrap;
+}
+input[type=text],input[type=email],input[type=password]{
+  width:100%;padding:12px 12px 12px 100px;
+  background:rgba(0,0,0,.5);border:1px solid var(--stroke);
+  border-radius:var(--r);color:var(--text);
+  font-family:var(--mono);font-size:.76rem;
+  outline:none;transition:border-color .2s,box-shadow .2s;
+}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.05);}
+input::placeholder{color:var(--muted);}
+.btn{
+  padding:12px 26px;border-radius:var(--r);
+  font-family:var(--hd);font-size:.68rem;font-weight:700;
+  letter-spacing:2px;cursor:pointer;border:1px solid;
+  white-space:nowrap;transition:all .2s;
+}
+.btn-cy{background:rgba(0,229,255,.1);border-color:var(--cyan);color:var(--cyan);}
+.btn-cy:hover{background:rgba(0,229,255,.2);box-shadow:0 0 20px rgba(0,229,255,.15);}
+.btn-cy:disabled{opacity:.4;cursor:wait;}
+.btn-red{background:rgba(255,45,85,.08);border-color:var(--red);color:var(--red);}
+.btn-sm{padding:5px 12px;font-size:.6rem;border-radius:2px;}
+
+/* Progress */
+.prog{display:none;margin-top:.9rem;}
+.prog.show{display:block;}
+.prog-track{height:2px;background:rgba(0,229,255,.06);border-radius:1px;overflow:hidden;}
+.prog-fill{height:100%;width:0%;border-radius:1px;background:linear-gradient(90deg,var(--cyan),var(--lime));transition:width .4s;}
+.prog-txt{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:6px;letter-spacing:1px;}
+
+/* Results */
+.results{display:none;}
+.results.show{display:block;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
+
+/* Health ring */
+.health-row{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.4rem;}
+.ring-wrap{position:relative;width:118px;height:118px;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:rgba(0,229,255,.06);stroke-width:10;}
+.ring-fg{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-n{font-family:var(--hd);font-size:1.75rem;font-weight:900;line-height:1;}
+.ring-l{font-family:var(--mono);font-size:.52rem;letter-spacing:2px;color:var(--muted);}
+.health-meta h3{font-family:var(--mono);font-size:.82rem;color:var(--white);margin-bottom:.35rem;font-weight:700;}
+.health-meta p{font-family:var(--mono);font-size:.7rem;color:var(--muted);}
+
+/* Threat badge */
+.tbdg{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:2px;font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:2px;}
+.t-CRITICAL{background:rgba(255,45,85,.12); color:var(--red);   border:1px solid rgba(255,45,85,.25);}
+.t-HIGH    {background:rgba(255,165,0,.1);  color:var(--amber); border:1px solid rgba(255,165,0,.22);}
+.t-MEDIUM  {background:rgba(255,229,0,.07); color:var(--yellow);border:1px solid rgba(255,229,0,.2);}
+.t-LOW     {background:rgba(57,255,20,.06); color:var(--lime);  border:1px solid rgba(57,255,20,.15);}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:.65rem;margin-bottom:.9rem;}
+.card{
+  background:var(--raised);border:1px solid var(--stroke);
+  border-radius:var(--r);padding:.95rem;position:relative;
+  overflow:hidden;transition:border-color .2s;
+}
+.card:hover{border-color:var(--stroke2);}
+.card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--cyan);}
+.card.ok::before{background:var(--lime);}
+.card.bad::before{background:var(--red);}
+.card.warn::before{background:var(--amber);}
+.c-lbl{font-family:var(--mono);font-size:.56rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:.38rem;}
+.c-val{font-family:var(--hd);font-size:1.2rem;font-weight:700;line-height:1.1;}
+.c-sub{font-family:var(--mono);font-size:.62rem;color:var(--muted);margin-top:.22rem;}
+
+/* Collapsible info sections */
+.isec{background:var(--surface);border:1px solid var(--stroke);border-radius:var(--r);margin-bottom:.65rem;}
+.isec-hdr{
+  padding:.85rem 1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:.65rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--cyan);border-bottom:1px solid transparent;user-select:none;transition:background .15s;
+}
+.isec-hdr:hover{background:rgba(0,229,255,.02);}
+.isec-hdr.open{border-bottom-color:var(--stroke);}
+.isec-body{padding:1.1rem;display:none;}
+.isec-body.show{display:block;}
+.irow{display:flex;align-items:flex-start;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(15,42,62,.35);font-size:.75rem;gap:1rem;}
+.irow:last-child{border:none;}
+.ikey{font-family:var(--mono);font-size:.64rem;color:var(--muted);flex-shrink:0;min-width:155px;}
+.ival{text-align:right;font-family:var(--mono);font-size:.64rem;word-break:break-all;}
+.ok-c{color:var(--lime);}  .bad-c{color:var(--red);}  .na-c{color:var(--muted);}
+
+/* VT bars */
+.vtbar{margin-bottom:.65rem;}
+.vtbar-hdr{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.62rem;color:var(--muted);margin-bottom:4px;}
+.vtbar-t{height:5px;background:var(--lift);border-radius:2px;overflow:hidden;}
+.vtbar-f{height:100%;border-radius:2px;transition:width 1.2s ease;}
+
+/* DNS block */
+.dns-blk{
+  background:var(--deep);border:1px solid var(--stroke);border-radius:var(--r);
+  padding:.9rem;font-family:var(--mono);font-size:.66rem;color:var(--lime);
+  white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;
+}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.chip{padding:2px 8px;border-radius:2px;font-family:var(--mono);font-size:.6rem;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.12);color:var(--text);}
+.chip.red{background:rgba(255,45,85,.06);border-color:rgba(255,45,85,.18);color:var(--red);}
+
+/* Reason list */
+.rlist{list-style:none;}
+.ritem{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(15,42,62,.35);font-family:var(--mono);font-size:.7rem;}
+.ritem:last-child{border:none;}
+
+/* ── LIVE FEED PAGE ────────────────────────────────────────── */
+.feed-stream{
+  background:rgba(0,0,0,.4);border:1px solid var(--stroke);border-radius:var(--r);
+  padding:.85rem;height:400px;overflow-y:auto;font-family:var(--mono);font-size:.63rem;
+}
+.fe{padding:3px 0;border-bottom:1px solid rgba(15,42,62,.25);animation:feIn .22s ease;}
+@keyframes feIn{from{opacity:0;transform:translateX(-5px);}to{opacity:1;transform:none;}}
+.fe-t{color:var(--lime);margin-right:5px;}
+.fe-ip{color:var(--cyan);}
+.fe-atk{color:var(--red);margin-left:4px;}
+.fe-blk{color:var(--amber);margin-left:4px;}
+
+/* ── MONITOR PAGE ──────────────────────────────────────────── */
+.mrow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--stroke);flex-wrap:wrap;gap:.5rem;}
+.mdom{font-family:var(--mono);font-size:.72rem;color:var(--cyan);}
+
+/* ── MODAL ─────────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;z-index:1000;background:rgba(1,3,6,.92);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--stroke);border-radius:var(--r);
+  padding:2rem;width:100%;max-width:420px;position:relative;
+  animation:modalIn .22s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.97);}to{opacity:1;transform:none;}}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--lime));}
+.modal-h{font-family:var(--hd);font-size:.88rem;font-weight:900;color:var(--cyan);letter-spacing:3px;margin-bottom:1.3rem;}
+.fgrp{margin-bottom:.85rem;}
+.flbl{display:block;font-family:var(--mono);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.finput{width:100%;padding:10px;background:rgba(0,0,0,.5);border:1px solid var(--stroke);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:.73rem;outline:none;transition:border-color .2s;}
+.finput:focus{border-color:var(--cyan);}
+.btn-full{width:100%;padding:11px;margin-top:.4rem;background:rgba(0,229,255,.1);border:1px solid var(--cyan);border-radius:var(--r);color:var(--cyan);font-family:var(--hd);font-size:.68rem;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.btn-full:hover{background:rgba(0,229,255,.2);}
+.modal-foot{text-align:center;margin-top:.75rem;font-family:var(--mono);font-size:.68rem;color:var(--muted);}
+.modal-foot span{color:var(--cyan);cursor:pointer;}
+.modal-x{position:absolute;top:.85rem;right:.9rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;transition:color .2s;}
+.modal-x:hover{color:var(--white);}
+
+/* ── TOAST ─────────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:1.4rem;right:1.4rem;z-index:2000;
+  background:var(--surface);border:1px solid var(--stroke);border-radius:var(--r);
+  padding:.85rem 1.3rem;font-family:var(--mono);font-size:.73rem;max-width:300px;
+  transform:translateX(115%);transition:transform .3s;
+}
+.toast.show{transform:translateX(0);}
+.toast.ok  {border-left:3px solid var(--lime);}
+.toast.err {border-left:3px solid var(--red);}
+.toast.info{border-left:3px solid var(--cyan);}
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+footer{
+  background:var(--deep);border-top:1px solid var(--stroke);
+  text-align:center;padding:1.5rem 1rem;
+  font-family:var(--mono);font-size:.63rem;color:var(--muted);
+  position:relative;z-index:1;
+}
+footer a{color:var(--cyan);text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+.fwarn{margin-top:.4rem;font-size:.58rem;color:rgba(46,88,114,.55);}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ════════════════════════════════════════════════════ -->
+<nav>
+  <div class="logo"><div class="logo-hex">🛡</div>AEGIS</div>
+  <div class="nav-links">
+    <button class="ntab active" data-page="dashboard">DASHBOARD</button>
+    <button class="ntab"        data-page="scan">SCAN</button>
+    <button class="ntab"        data-page="feed">LIVE FEED</button>
+    <button class="ntab"        data-page="monitor"  id="ntab-monitor"  style="display:none;">MONITOR</button>
+    <button class="ntab"        data-page="protect"  id="ntab-protect"  style="display:none;">🛡 PROTECT</button>
+  </div>
+  <div class="nav-right">
+    <a class="gh-link" href="https://github.com/arnabdevs" target="_blank" rel="noopener">⬡ arnabdevs</a>
+    <button class="nbtn nbtn-ghost" id="btn-login"    onclick="openModal('login')">LOGIN</button>
+    <button class="nbtn nbtn-solid" id="btn-register" onclick="openModal('register')">REGISTER</button>
+    <button class="nbtn nbtn-out"   id="btn-logout"   onclick="doLogout()" style="display:none;">LOGOUT</button>
+  </div>
+</nav>
+
+<!-- ═══ DASHBOARD ══════════════════════════════════════════════ -->
+<div class="page active" id="pg-dashboard">
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-eye">Enterprise Security Operations Center</div>
+    <h1 class="hero-h1">AEGIS <em>SOC</em> ENGINE</h1>
+    <p class="hero-p">AI-powered threat intelligence · SSL analysis · breach detection · Cloudflare-style IP defence · daily monitoring</p>
+    <div class="pills">
+      <div class="pill pill-green" id="sys-pill"><div class="pdot"></div><span id="sys-txt">CONNECTING…</span></div>
+      <div class="pill pill-cyan"><div class="pdot"></div>AI DEFENDER ACTIVE</div>
+      <div class="pill pill-amber"><div class="pdot"></div><span id="blocked-pill">0</span> IPs BLOCKED</div>
+      <div class="pill pill-green"><div class="pdot"></div>REAL-TIME MONITOR</div>
+    </div>
+  </div>
+
+  <!-- Stat tiles -->
+  <div class="g4" style="margin-bottom:1rem;">
+    <div class="tile"><div class="tile-lbl">Total Scans</div><div class="tile-val" id="d-total">—</div><div class="tile-sub">All time</div></div>
+    <div class="tile"><div class="tile-lbl">High Risk</div><div class="tile-val" id="d-highrisk" style="color:var(--red);">—</div><div class="tile-sub">CRITICAL + HIGH</div></div>
+    <div class="tile"><div class="tile-lbl">Blocked IPs</div><div class="tile-val" id="d-blocked" style="color:var(--amber);">—</div><div class="tile-sub">Auto + manual</div></div>
+    <div class="tile"><div class="tile-lbl">Monitored Sites</div><div class="tile-val" id="d-monitored" style="color:var(--cyan);">—</div><div class="tile-sub">Daily reports</div></div>
+  </div>
+
+  <div class="g2" style="margin-bottom:.9rem;">
+    <!-- Risk distribution -->
+    <div class="panel"><div class="panel-body">
+      <div class="sec-lbl">Risk Distribution</div>
+      <div class="rrow"><span class="rlbl rc-crit">CRITICAL</span><div class="rtrack"><div class="rfill rf-crit" id="rb-crit" style="width:0%"></div></div><span class="rcnt" id="rc-crit">0</span></div>
+      <div class="rrow"><span class="rlbl rc-high">HIGH</span><div class="rtrack"><div class="rfill rf-high" id="rb-high" style="width:0%"></div></div><span class="rcnt" id="rc-high">0</span></div>
+      <div class="rrow"><span class="rlbl rc-med">MEDIUM</span><div class="rtrack"><div class="rfill rf-med"  id="rb-med"  style="width:0%"></div></div><span class="rcnt" id="rc-med">0</span></div>
+      <div class="rrow"><span class="rlbl rc-low">LOW</span><div class="rtrack"><div class="rfill rf-low"  id="rb-low"  style="width:0%"></div></div><span class="rcnt" id="rc-low">0</span></div>
+    </div></div>
+
+    <!-- API usage -->
+    <div class="panel"><div class="panel-body">
+      <div class="sec-lbl">API Call Usage</div>
+      <div id="api-usage">
+        <div style="color:var(--muted);font-family:var(--mono);font-size:.66rem;">Loading…</div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Recent scans -->
+  <div class="panel"><div class="panel-body">
+    <div class="sec-lbl">Recent Scans</div>
+    <div style="overflow-x:auto;">
+      <table class="stbl" id="scan-tbl">
+        <tr><th>Target</th><th>Type</th><th>Health</th><th>Threat</th><th>Time</th></tr>
+        <tr><td colspan="5" style="color:var(--muted);font-size:.66rem;text-align:center;padding:1rem;">No scans yet — start scanning!</td></tr>
+      </table>
+    </div>
+  </div></div>
+
+</div>
+</div>
+
+<!-- ═══ SCAN PAGE ═══════════════════════════════════════════════ -->
+<div class="page" id="pg-scan">
+<div class="wrap">
+
+  <div class="panel" style="margin-bottom:.9rem;"><div class="panel-body">
+    <!-- Scan type tabs -->
+    <div class="scan-tabs">
+      <button class="stab active" id="stab-ws" onclick="setStab('ws')">🌐 WEBSITE SCAN</button>
+      <button class="stab"        id="stab-em" onclick="setStab('em')">📧 EMAIL BREACH</button>
+      <button class="stab"        id="stab-pw" onclick="setStab('pw')">🔑 PASSWORD CHECK</button>
+    </div>
+
+    <!-- Website pane -->
+    <div id="sp-ws">
+      <div class="igrp">
+        <div class="ibox">
+          <span class="ipfx">TARGET://</span>
+          <input type="text" id="ws-inp" placeholder="example.com" onkeydown="if(event.key==='Enter')doScan('ws')"/>
+        </div>
+        <button class="btn btn-cy" id="ws-btn" onclick="doScan('ws')">⚡ SCAN NOW</button>
+      </div>
+    </div>
+
+    <!-- Email pane -->
+    <div id="sp-em" style="display:none;">
+      <div class="igrp">
+        <div class="ibox">
+          <span class="ipfx">EMAIL:</span>
+          <input type="email" id="em-inp" placeholder="target@domain.com" onkeydown="if(event.key==='Enter')doScan('em')"/>
+        </div>
+        <button class="btn btn-cy" id="em-btn" onclick="doScan('em')">🔍 CHECK BREACH</button>
+      </div>
+    </div>
+
+    <!-- Password pane -->
+    <div id="sp-pw" style="display:none;">
+      <div style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:3px;padding:.75rem;margin-bottom:.8rem;font-family:var(--mono);font-size:.63rem;color:var(--cyan);">
+        ✅ k-Anonymity: Only the first 5 chars of your password's SHA-1 hash are sent. Your actual password never leaves your browser.
+      </div>
+      <div class="igrp">
+        <div class="ibox">
+          <span class="ipfx">PASSWORD:</span>
+          <input type="password" id="pw-inp" placeholder="Enter password to check" onkeydown="if(event.key==='Enter')doScan('pw')"/>
+        </div>
+        <button class="btn btn-cy" id="pw-btn" onclick="doScan('pw')">🔑 CHECK PWNED</button>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="prog" id="prog">
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="prog-txt" id="prog-txt">Initializing…</div>
+    </div>
+  </div></div>
+
+  <!-- Website results -->
+  <div class="results" id="res-ws">
+    <div class="panel" style="margin-bottom:.8rem;"><div class="panel-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem;">
+        <div>
+          <div style="font-family:var(--hd);font-size:1.1rem;color:var(--cyan);" id="res-domain">—</div>
+          <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:4px;" id="res-time"></div>
+          <div style="font-family:var(--mono);font-size:.58rem;color:var(--amber);margin-top:2px;display:none;" id="res-cached">⚡ Cached result (5 min)</div>
+        </div>
+        <div id="threat-badge"></div>
+      </div>
+
+      <!-- Health ring + meta -->
+      <div class="health-row">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 118 118" width="118" height="118">
+            <circle class="ring-bg" cx="59" cy="59" r="50"/>
+            <circle class="ring-fg" id="ring-fg" cx="59" cy="59" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-n" id="ring-n">--</div>
+            <div class="ring-l">HEALTH</div>
+          </div>
+        </div>
+        <div class="health-meta">
+          <h3 id="h-title">Analyzing…</h3>
+          <p id="h-sub" style="margin-top:.3rem;"></p>
+          <div style="margin-top:.75rem;" id="mon-cta"></div>
+        </div>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="cards" id="cards"></div>
+    </div></div>
+
+    <!-- Collapsible detail sections injected by JS -->
+    <div id="sec-blocks"></div>
+  </div>
+
+  <!-- Email results -->
+  <div class="results" id="res-em">
+    <div class="panel"><div class="panel-body">
+      <div class="sec-lbl">Email Breach Report</div>
+      <div id="em-result"></div>
+    </div></div>
+  </div>
+
+  <!-- Password results -->
+  <div class="results" id="res-pw">
+    <div class="panel"><div class="panel-body">
+      <div class="sec-lbl">Password Breach Check</div>
+      <div id="pw-result"></div>
+    </div></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══ LIVE FEED PAGE ══════════════════════════════════════════ -->
+<div class="page" id="pg-feed">
+<div class="wrap">
+  <div class="g2" style="margin-bottom:.9rem;">
+    <div class="panel"><div class="panel-body">
+      <div class="sec-lbl" style="justify-content:space-between;">
+        <span>Live Attack Feed</span>
+        <span style="font-size:.58rem;color:var(--lime);animation:blink 1.5s infinite;">● LIVE</span>
+      </div>
+      <div class="feed-stream" id="feed"></div>
+    </div></div>
+
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <div class="panel"><div class="panel-body">
+        <div class="sec-lbl">Blocked Today</div>
+        <div style="font-family:var(--hd);font-size:2.2rem;color:var(--red);" id="feed-blocked">0</div>
+        <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);">Auto-blocked IPs</div>
+      </div></div>
+      <div class="panel"><div class="panel-body">
+        <div class="sec-lbl">Attack Rate</div>
+        <div style="font-family:var(--hd);font-size:2.2rem;color:var(--amber);" id="feed-rate">0</div>
+        <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);">events/min</div>
+      </div></div>
+      <div class="panel"><div class="panel-body">
+        <div class="sec-lbl">Top Attack Type</div>
+        <div style="font-family:var(--mono);font-size:.72rem;color:var(--red);word-break:break-all;" id="feed-top">SQL_INJECTION</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="panel"><div class="panel-body">
+    <div class="sec-lbl">Blocked IP Registry</div>
+    <div id="blocked-registry" style="font-family:var(--mono);font-size:.66rem;color:var(--muted);">
+      Login to view and manage blocked IPs.
+    </div>
+  </div></div>
+</div>
+</div>
+
+<!-- ═══ MONITOR PAGE ════════════════════════════════════════════ -->
+<div class="page" id="pg-monitor">
+<div class="wrap">
+  <div class="panel" style="margin-bottom:.9rem;"><div class="panel-body">
+    <div class="sec-lbl">Daily Health Monitor — email + Telegram reports every 24 h</div>
+    <div id="mon-list" style="margin-bottom:1rem;">
+      <div style="color:var(--muted);font-family:var(--mono);font-size:.7rem;">No sites monitored yet.</div>
+    </div>
+    <div class="igrp">
+      <div class="ibox">
+        <span class="ipfx">ADD://</span>
+        <input type="text" id="mon-inp" placeholder="domain.com" onkeydown="if(event.key==='Enter')addMonitor()"/>
+      </div>
+      <button class="btn btn-cy" onclick="addMonitor()">+ ADD SITE</button>
+    </div>
+  </div></div>
+
+  <div class="panel"><div class="panel-body">
+    <div class="sec-lbl">Alert Settings</div>
+    <div style="margin-bottom:.9rem;">
+      <label class="flbl">Telegram Chat ID <span style="opacity:.4;">(from @userinfobot on Telegram)</span></label>
+      <input type="text" class="finput" id="tg-inp" placeholder="Your Telegram chat ID"/>
+    </div>
+    <button class="btn btn-cy" style="padding:10px 20px;font-size:.65rem;" onclick="saveTgSettings()">SAVE SETTINGS</button>
+  </div></div>
+</div>
+</div>
+
+
+<!-- ═══ PROTECT PAGE ════════════════════════════════════════════ -->
+<div class="page" id="pg-protect">
+<div class="wrap">
+
+  <!-- Connect a domain -->
+  <div class="panel" style="margin-bottom:.9rem;"><div class="panel-body">
+    <div class="sec-lbl">🛡️ Active Defence — Connect a Client Domain to Cloudflare</div>
+    <div style="color:var(--muted);font-size:.68rem;line-height:1.8;margin-bottom:1rem;">
+      Connect any domain you manage on Cloudflare. AEGIS will block malicious IPs,
+      harden security settings, check email protection (SPF/DKIM/DMARC), and
+      run daily auto-defend scans automatically.
+    </div>
+    <div class="igrp" style="flex-direction:column;gap:.5rem;">
+      <div class="ibox">
+        <span class="ipfx">DOMAIN://</span>
+        <input type="text" id="cf-domain" placeholder="example.com"/>
+      </div>
+      <div class="ibox">
+        <span class="ipfx">TOKEN://</span>
+        <input type="text" id="cf-token" placeholder="Cloudflare API Token (Zone:Edit)"/>
+      </div>
+      <div class="ibox">
+        <span class="ipfx">ZONE ID://</span>
+        <input type="text" id="cf-zoneid" placeholder="Zone ID from Cloudflare dashboard"/>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.3rem;">
+        <button class="btn btn-cy" onclick="connectZone()" style="flex:1;">⚡ CONNECT &amp; PROTECT</button>
+        <a href="https://dash.cloudflare.com" target="_blank"
+           style="padding:8px 14px;border:1px solid var(--stroke2);border-radius:3px;
+                  color:var(--muted);font-family:var(--mono);font-size:.63rem;
+                  text-decoration:none;display:flex;align-items:center;">
+          Open Cloudflare ↗
+        </a>
+      </div>
+    </div>
+    <div style="margin-top:.75rem;padding:.6rem;background:rgba(0,212,255,.03);
+                border:1px solid var(--stroke2);border-radius:3px;">
+      <div style="color:var(--muted);font-size:.62rem;line-height:1.8;">
+        <strong style="color:var(--cyan);">How to get your Zone ID and API Token:</strong><br/>
+        1. Go to <strong>dash.cloudflare.com</strong> → click your domain<br/>
+        2. Scroll down on the Overview page → copy <strong>Zone ID</strong> from the right sidebar<br/>
+        3. Go to <strong>My Profile → API Tokens → Create Token</strong><br/>
+        4. Use template: <strong>"Edit zone DNS"</strong> → set Zone Resources to your domain<br/>
+        5. Paste both above and click Connect
+      </div>
+    </div>
+  </div></div>
+
+  <!-- Protected domains list -->
+  <div class="panel" style="margin-bottom:.9rem;"><div class="panel-body">
+    <div class="sec-lbl">Protected Domains</div>
+    <div id="protect-list">
+      <div style="color:var(--muted);font-family:var(--mono);font-size:.7rem;">
+        No domains protected yet. Connect one above.
+      </div>
+    </div>
+  </div></div>
+
+  <!-- Auto-defend panel -->
+  <div class="panel" style="margin-bottom:.9rem;" id="defend-panel" style="display:none;"><div class="panel-body">
+    <div class="sec-lbl">⚡ One-Click Auto-Defend</div>
+    <div style="color:var(--muted);font-size:.68rem;margin-bottom:.75rem;line-height:1.7;">
+      Scans the domain with all AEGIS intelligence and automatically pushes every
+      available defence to Cloudflare — blocks malicious IPs, enforces HTTPS,
+      enables Bot Fight Mode, hardens TLS, checks email security.
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+      <select id="defend-domain-sel"
+        style="background:var(--panel2);border:1px solid var(--stroke2);color:var(--fg);
+               padding:8px 12px;border-radius:3px;font-family:var(--mono);font-size:.68rem;flex:1;">
+        <option value="">Select domain…</option>
+      </select>
+      <button class="btn btn-cy" onclick="runAutoDefend()" style="white-space:nowrap;">
+        🛡️ AUTO-DEFEND NOW
+      </button>
+    </div>
+    <div id="defend-result" style="margin-top:.75rem;display:none;"></div>
+  </div></div>
+
+  <!-- Email security checker -->
+  <div class="panel"><div class="panel-body">
+    <div class="sec-lbl">📧 Email Security — SPF / DKIM / DMARC</div>
+    <div style="color:var(--muted);font-size:.68rem;margin-bottom:.75rem;">
+      Checks if your domain can be used to send phishing emails pretending to be you.
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <select id="email-sec-sel"
+        style="background:var(--panel2);border:1px solid var(--stroke2);color:var(--fg);
+               padding:8px 12px;border-radius:3px;font-family:var(--mono);font-size:.68rem;flex:1;">
+        <option value="">Select domain…</option>
+      </select>
+      <button class="btn btn-cy" onclick="checkEmailSecurity()">CHECK NOW</button>
+    </div>
+    <div id="email-sec-result" style="margin-top:.75rem;display:none;"></div>
+  </div></div>
+
+</div>
+</div>
+
+<!-- ═══ AUTH MODAL ══════════════════════════════════════════════ -->
+<div class="overlay" id="auth-overlay">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="modal-h" id="modal-h">⬡ CREATE ACCOUNT</div>
+
+    <div id="reg-fields">
+      <div class="fgrp">
+        <label class="flbl">Name <span style="opacity:.4;">(optional)</span></label>
+        <input type="text" class="finput" id="f-name" placeholder="Your name"/>
+      </div>
+    </div>
+    <div class="fgrp">
+      <label class="flbl">Email Address</label>
+      <input type="email" class="finput" id="f-email" placeholder="you@email.com"/>
+    </div>
+    <div class="fgrp">
+      <label class="flbl">Password</label>
+      <input type="password" class="finput" id="f-pw" placeholder="Min 6 characters"/>
+    </div>
+    <div id="reg-fields2">
+      <div class="fgrp">
+        <label class="flbl">Telegram Chat ID <span style="opacity:.4;">(optional — for daily alerts)</span></label>
+        <input type="text" class="finput" id="f-tg" placeholder="Get from @userinfobot on Telegram"/>
+      </div>
+    </div>
+
+    <button class="btn-full" id="auth-submit" onclick="submitAuth()">CREATE ACCOUNT</button>
+    <div class="modal-foot" id="modal-foot">
+      Already have an account? <span onclick="openModal('login')">Sign in</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ FOOTER ══════════════════════════════════════════════════ -->
+<footer>
+  <div><strong style="color:var(--cyan);font-family:var(--hd);letter-spacing:3px;">AEGIS SOC ENGINE v3.0</strong></div>
+  <div style="margin-top:.3rem;">
+    Built by <a href="https://github.com/arnabdevs" target="_blank">Arnab Kumar Das</a>
+    &nbsp;·&nbsp;
+    VirusTotal · AbuseIPDB · AlienVault OTX · SSL Labs · URLScan · HackerTarget · crt.sh · HIBP
+  </div>
+  <div class="fwarn">⚠ For authorised security testing and defensive analysis only. Unauthorised scanning may be illegal.</div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT  —  all bugs fixed, fully wired to backend
+═══════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── Config ──────────────────────────────────────────────── */
+const API_URL   = 'https://aegis-soc-engine.onrender.com';
+let   authToken = localStorage.getItem('aegis_token') || '';
+let   authMode  = 'register';
+let   progTimer, progStep = 0;
+let   feedBlockCount = 0;
+const ATK_TYPES = ['SQL_INJECTION','XSS_ATTEMPT','BRUTE_FORCE','PORT_SCAN',
+                   'DDoS_PROBE','PATH_TRAVERSAL','CSRF_ATTACK','BOT_CRAWL',
+                   'RCE_ATTEMPT','LFI_PROBE','SSRF_PROBE','XXE_INJECTION'];
+const GEOS      = ['CN','RU','KP','IR','US','DE','BR','NL','UA','VN','RO','PK'];
+const STEPS     = [
+  'Resolving DNS & IP records…',
+  'Querying SSL Labs for grade…',
+  'Scanning VirusTotal (70+ vendors)…',
+  'Checking AbuseIPDB confidence score…',
+  'AlienVault OTX threat intel…',
+  'Enumerating subdomains via crt.sh…',
+  'Auditing security response headers…',
+  'URLScan.io malware verdict…',
+  'RDAP / WHOIS registration lookup…',
+  'Running AI threat scoring engine…',
+  'Building security report…',
+];
+
+/* ── DOM helpers ─────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+
+function show(id) { $(id).style.display = 'block'; }
+function hide(id) { $(id).style.display = 'none';  }
+
+function toast(msg, type = 'ok') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className   = `toast show ${type}`;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+async function apiFetch(endpoint, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(API_URL + endpoint, {
+    ...options,
+    headers: { ...headers, ...(options.headers || {}) },
+  });
+  return res.json();
+}
+
+/* ── Page router ─────────────────────────────────────────── */
+document.querySelectorAll('.ntab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const page = tab.dataset.page;
+    // Update tabs
+    document.querySelectorAll('.ntab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    // Update pages
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    $(`pg-${page}`).classList.add('active');
+
+    if (page === 'dashboard') loadDashboard();
+    if (page === 'monitor' && authToken) loadMonitorList();
+  });
+});
+
+function goPage(pageId) {
+  const tab = document.querySelector(`.ntab[data-page="${pageId}"]`);
+  if (tab) tab.click();
+}
+
+/* ── Backend connection ──────────────────────────────────── */
+async function checkBackend() {
+  const pill = $('sys-pill');
+  const txt  = $('sys-txt');
+  txt.textContent     = 'CONNECTING…';
+  pill.className      = 'pill pill-amber';
+
+  try {
+    const ctrl = new AbortController();
+    const tmo  = setTimeout(() => ctrl.abort(), 20000);
+    const res  = await fetch(`${API_URL}/api/health`, { signal: ctrl.signal });
+    clearTimeout(tmo);
+
+    if (res.ok) {
+      const d = await res.json();
+      pill.className              = 'pill pill-green';
+      txt.textContent             = 'SYSTEM ONLINE';
+      $('blocked-pill').textContent = d.blocked_ips || 0;
+      toast('⚡ AEGIS Backend Connected', 'ok');
+      loadDashboard();
+    } else {
+      pill.className  = 'pill pill-amber';
+      txt.textContent = 'BACKEND ERROR';
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      pill.className  = 'pill pill-amber';
+      txt.textContent = 'WAKING UP…';
+      toast('⏳ Render free tier is cold-starting (~30 s)…', 'info');
+      setTimeout(checkBackend, 36000);
+    } else {
+      pill.className  = 'pill pill-amber';
+      txt.textContent = 'OFFLINE';
+      toast('Cannot reach backend — check Render dashboard', 'err');
+    }
+  }
+}
+
+// Keep-alive ping every 4 min so Render never sleeps mid-session
+setInterval(() => fetch(`${API_URL}/api/health`).catch(() => {}), 240000);
+
+/* ── Dashboard ───────────────────────────────────────────── */
+async function loadDashboard() {
+  try {
+    const d = await apiFetch('/api/stats/dashboard');
+
+    $('d-total').textContent     = d.total_scans     || 0;
+    $('d-highrisk').textContent  = d.high_risk        || 0;
+    $('d-blocked').textContent   = d.blocked_ips      || 0;
+    $('d-monitored').textContent = d.active_monitors  || 0;
+    $('blocked-pill').textContent = d.blocked_ips     || 0;
+
+    // Risk bars
+    const rd    = d.risk_distribution || {};
+    const total = Math.max(1, Object.values(rd).reduce((a, b) => a + b, 0));
+    [['crit','CRITICAL'],['high','HIGH'],['med','MEDIUM'],['low','LOW']]
+      .forEach(([k, K]) => {
+        const cnt = rd[K] || 0;
+        $(`rb-${k}`).style.width   = `${(cnt / total * 100).toFixed(1)}%`;
+        $(`rc-${k}`).textContent   = cnt;
+      });
+
+    // API usage
+    const au = d.api_usage || {};
+    $('api-usage').innerHTML = Object.keys(au).length
+      ? Object.entries(au).map(([k, v]) =>
+          `<div style="display:flex;justify-content:space-between;padding:4px 0;
+            border-bottom:1px solid var(--stroke);font-family:var(--mono);font-size:.63rem;">
+            <span style="color:var(--muted);">${k}</span>
+            <span style="color:var(--cyan);">${v} calls</span>
+          </div>`
+        ).join('')
+      : '<div style="color:var(--muted);font-size:.66rem;">No API calls yet</div>';
+
+    // Recent scans table
+    const scans = d.recent_scans || [];
+    $('scan-tbl').innerHTML = scans.length
+      ? `<tr><th>Target</th><th>Type</th><th>Health</th><th>Threat</th><th>Time</th></tr>`
+        + scans.map(s => {
+            const bCls = {CRITICAL:'b-crit',HIGH:'b-high',MEDIUM:'b-med',LOW:'b-low'}
+                        [s.threat_level] || 'b-low';
+            const hCol = s.health >= 80 ? 'var(--lime)' : s.health >= 50 ? 'var(--amber)' : 'var(--red)';
+            return `<tr>
+              <td style="color:var(--cyan);">${s.target||'—'}</td>
+              <td style="color:var(--muted);">${s.type||'—'}</td>
+              <td style="color:${hCol};">${s.health ?? '—'}/100</td>
+              <td><span class="bdg ${bCls}">${s.threat_level||'N/A'}</span></td>
+              <td style="color:var(--muted);">${s.time||'—'}</td>
+            </tr>`;
+          }).join('')
+      : `<tr><th>Target</th><th>Type</th><th>Health</th><th>Threat</th><th>Time</th></tr>
+         <tr><td colspan="5" style="color:var(--muted);font-size:.66rem;text-align:center;padding:1rem;">No scans yet</td></tr>`;
+  } catch (e) {
+    console.error('Dashboard load error:', e);
+  }
+}
+
+/* ── Scan tab switcher — FIXED (no leading space bug) ────── */
+function setStab(tab) {
+  ['ws', 'em', 'pw'].forEach(id => {
+    $(`stab-${id}`).classList.toggle('active', id === tab);
+    $(`sp-${id}`).style.display = id === tab ? 'block' : 'none';
+  });
+  ['res-ws', 'res-em', 'res-pw'].forEach(id =>
+    $(id).classList.remove('show')
+  );
+}
+
+/* ── Progress bar ────────────────────────────────────────── */
+function startProg() {
+  $('prog').classList.add('show');
+  progStep = 0;
+  $('prog-fill').style.width = '0%';
+  progTimer = setInterval(() => {
+    const pct = Math.min(90, progStep * 8 + 5);
+    $('prog-fill').style.width = pct + '%';
+    $('prog-txt').textContent  = STEPS[progStep % STEPS.length];
+    progStep++;
+  }, 900);
+}
+
+function stopProg() {
+  clearInterval(progTimer);
+  $('prog-fill').style.width = '100%';
+  setTimeout(() => {
+    $('prog').classList.remove('show');
+    $('prog-fill').style.width = '0%';
+  }, 500);
+}
+
+/* ── Scan dispatcher ─────────────────────────────────────── */
+async function doScan(type) {
+  if (type === 'ws') {
+    let d = ($('ws-inp').value || '').trim()
+              .replace(/^https?:\/\//, '').split('/')[0].trim();
+    if (!d) { toast('Enter a domain to scan', 'err'); return; }
+    setBtnLoading('ws-btn', true, '⟳ SCANNING…');
+    ['res-em', 'res-pw'].forEach(id => $(`${id}`).classList.remove('show'));
+    startProg();
+    try {
+      const data = await apiFetch('/api/scan/website',
+        { method: 'POST', body: JSON.stringify({ domain: d }) });
+      stopProg();
+      renderWebsite(data);
+      addFeedEntry(d);
+    } catch {
+      stopProg();
+      toast('Backend unreachable — showing demo data', 'err');
+      renderWebsite(demoData(d));
+    }
+    setBtnLoading('ws-btn', false, '⚡ SCAN NOW');
+
+  } else if (type === 'em') {
+    const e = ($('em-inp').value || '').trim();
+    if (!e || !e.includes('@')) { toast('Enter a valid email', 'err'); return; }
+    setBtnLoading('em-btn', true, '⟳ CHECKING…');
+    $('res-em').classList.remove('show');
+    try {
+      const data = await apiFetch('/api/scan/email',
+        { method: 'POST', body: JSON.stringify({ email: e }) });
+      renderEmail(data);
+    } catch { toast('Backend unreachable', 'err'); }
+    setBtnLoading('em-btn', false, '🔍 CHECK BREACH');
+
+  } else if (type === 'pw') {
+    const p = $('pw-inp').value || '';
+    if (!p) { toast('Enter a password to check', 'err'); return; }
+    setBtnLoading('pw-btn', true, '⟳ CHECKING…');
+    $('res-pw').classList.remove('show');
+    try {
+      const data = await apiFetch('/api/scan/password',
+        { method: 'POST', body: JSON.stringify({ password: p }) });
+      renderPassword(data);
+    } catch { toast('Backend unreachable', 'err'); }
+    setBtnLoading('pw-btn', false, '🔑 CHECK PWNED');
+  }
+}
+
+function setBtnLoading(id, loading, label) {
+  const b = $(id);
+  b.disabled    = loading;
+  b.textContent = label;
+}
+
+/* ── Render: website ─────────────────────────────────────── */
+function renderWebsite(d) {
+  $('res-ws').classList.add('show');
+
+  $('res-domain').textContent = d.domain || '—';
+  $('res-time').textContent   = 'Scanned: ' + new Date(d.scanned_at || Date.now()).toLocaleString();
+  if (d.cached) show('res-cached'); else hide('res-cached');
+
+  const threat = d.ai_threat || { level: 'LOW', score: 0 };
+  $('threat-badge').innerHTML =
+    `<span class="tbdg t-${threat.level}">⬡ ${threat.level} — ${threat.score}/100</span>`;
+
+  const h  = d.health_score || 0;
+  const hc = h >= 80 ? 'var(--lime)' : h >= 50 ? 'var(--amber)' : 'var(--red)';
+  const fg = $('ring-fg');
+  fg.style.stroke              = hc;
+  fg.style.strokeDashoffset    = 314 - (314 * h / 100);
+  $('ring-n').textContent      = h;
+  $('ring-n').style.color      = hc;
+  $('h-title').textContent     = h >= 80 ? '✅ Site Healthy' : h >= 50 ? '⚠ Issues Detected' : '🚨 High Risk Detected';
+  $('h-sub').textContent       = h >= 80 ? 'No critical vulnerabilities found.'
+                                : h >= 50 ? 'Security improvements recommended.'
+                                :           'Immediate attention required.';
+
+  $('mon-cta').innerHTML = authToken
+    ? `<button class="btn btn-cy" style="padding:8px 16px;font-size:.6rem;"
+         onclick="quickAddMonitor('${d.domain}')">+ DAILY MONITOR</button>`
+    : `<span style="font-family:var(--mono);font-size:.63rem;color:var(--muted);">Login to enable daily monitoring</span>`;
+
+  const ip  = d.ip_reputation   || {};
+  const vt  = d.virustotal      || {};
+  const ab  = d.abuseipdb       || {};
+  const us  = d.urlscan         || {};
+  const hdr = d.security_headers || {};
+  const ssl = d.ssl_grade       || 'N/A';
+  const otx = d.alienvault      || {};
+
+  const sslC = ['A+','A'].includes(ssl) ? 'ok' : ['F','T'].includes(ssl) ? 'bad' : 'warn';
+  const vtC  = (vt.malicious || 0) > 0 ? 'bad' : 'ok';
+  const abC  = (ab.abuse_confidence || 0) > 50 ? 'bad' : (ab.abuse_confidence || 0) > 20 ? 'warn' : 'ok';
+  const hdrC = hdr.score < 40 ? 'bad' : hdr.score < 70 ? 'warn' : 'ok';
+  const otxC = otx.pulse_count > 5 ? 'bad' : otx.pulse_count > 0 ? 'warn' : 'ok';
+
+  $('cards').innerHTML = `
+    <div class="card ${sslC}"><div class="c-lbl">🔒 SSL Grade</div>
+      <div class="c-val">${ssl}</div><div class="c-sub">Transport security</div></div>
+    <div class="card ${vtC}"><div class="c-lbl">🦠 VirusTotal</div>
+      <div class="c-val">${vt.malicious||0}<span style="font-size:.7rem;opacity:.4;"> / ${vt.total||0}</span></div>
+      <div class="c-sub">${(vt.malicious||0) > 0 ? 'Flagged malicious' : 'Clean across vendors'}</div></div>
+    <div class="card ${abC}"><div class="c-lbl">🚨 AbuseIPDB</div>
+      <div class="c-val">${ab.abuse_confidence||0}%</div>
+      <div class="c-sub">${ab.total_reports||0} reports · ${ab.country||'N/A'}</div></div>
+    <div class="card ${ip.tor||ip.proxy ? 'bad' : 'ok'}"><div class="c-lbl">🌐 IP Address</div>
+      <div class="c-val" style="font-size:.9rem;">${ip.query||'N/A'}</div>
+      <div class="c-sub">${ip.proxy?'⚠ Proxy':''} ${ip.tor?'⚠ TOR':''} ${ip.isp||''}</div></div>
+    <div class="card"><div class="c-lbl">📍 Location</div>
+      <div class="c-val" style="font-size:1rem;">${ip.countryCode||'??'}</div>
+      <div class="c-sub">${ip.city||''} · ${ip.regionName||''}</div></div>
+    <div class="card ${us.malicious ? 'bad' : 'ok'}"><div class="c-lbl">🔍 URLScan</div>
+      <div class="c-val" style="font-size:.88rem;">${us.malicious ? 'MALICIOUS' : 'CLEAN'}</div>
+      <div class="c-sub">Risk score: ${us.score||0}</div></div>
+    <div class="card ${hdrC}"><div class="c-lbl">📋 Headers Grade</div>
+      <div class="c-val">${hdr.grade||'N/A'}</div>
+      <div class="c-sub">${hdr.score||0}/100 present</div></div>
+    <div class="card ${otxC}"><div class="c-lbl">🎯 OTX Pulses</div>
+      <div class="c-val">${otx.pulse_count||0}</div>
+      <div class="c-sub">AlienVault threat intel</div></div>
+  `;
+
+  /* Collapsible detail sections */
+  const sections = [];
+
+  if (threat.reasons?.length)
+    sections.push(['AI THREAT ANALYSIS', buildAI(threat)]);
+  if (Object.keys(hdr.headers || {}).length)
+    sections.push([`SECURITY HEADERS — ${hdr.grade||'N/A'} (${hdr.score||0}/100)`, buildHeaders(hdr)]);
+  if ((vt.total || 0) > 0)
+    sections.push(['VIRUSTOTAL — 70+ VENDOR ANALYSIS', buildVT(vt)]);
+  if (us.malicious !== undefined)
+    sections.push(['URLSCAN.IO VERDICT', buildURLScan(us)]);
+  if (Object.keys(otx).length)
+    sections.push(['ALIENVAULT OTX THREAT INTEL', buildOTX(otx)]);
+  if (Object.keys(ip).length)
+    sections.push(['IP INTELLIGENCE', buildIP(ip, ab)]);
+  if (Object.keys(d.whois || {}).length)
+    sections.push(['DOMAIN REGISTRATION (RDAP/WHOIS)', buildWHOIS(d.whois)]);
+  if ((d.subdomains || []).length)
+    sections.push([`SUBDOMAIN ENUMERATION — ${d.subdomains.length} found`, buildSubs(d.subdomains)]);
+  if (d.dns_records)
+    sections.push(['DNS RECORDS', `<div class="dns-blk">${d.dns_records}</div>`]);
+
+  $('sec-blocks').innerHTML = sections.map(([ title, html ], i) => `
+    <div class="isec">
+      <div class="isec-hdr ${i === 0 ? 'open' : ''}" onclick="toggleIsec(this)">
+        <span>◈ ${title}</span>
+        <span>${i === 0 ? '▼' : '▶'}</span>
+      </div>
+      <div class="isec-body ${i === 0 ? 'show' : ''}">${html}</div>
+    </div>
+  `).join('');
+
+  window.scrollTo({ top: $('res-ws').offsetTop - 72, behavior: 'smooth' });
+}
+
+function toggleIsec(hdr) {
+  const body = hdr.nextElementSibling;
+  const open = body.classList.toggle('show');
+  hdr.classList.toggle('open', open);
+  hdr.lastElementChild.textContent = open ? '▼' : '▶';
+}
+
+/* Section builders */
+function buildAI(t) {
+  return `<ul class="rlist">${(t.reasons || []).map(r =>
+    `<li class="ritem"><span>${r.startsWith('✅') ? '' : '⚠'}</span><span>${r}</span></li>`
+  ).join('')}</ul>`;
+}
+
+function buildHeaders(hdr) {
+  return Object.entries(hdr.headers || {}).map(([k, v]) =>
+    `<div class="irow">
+      <span class="ikey">${k}</span>
+      <span class="ival ${v ? 'ok-c' : 'bad-c'}">${v ? '✓ Present' : '✗ Missing'}</span>
+    </div>`
+  ).join('')
+  + (hdr.server_banner ? `<div class="irow"><span class="ikey">Server Banner</span><span class="ival na-c">${hdr.server_banner}</span></div>` : '')
+  + (hdr.powered_by    ? `<div class="irow"><span class="ikey">X-Powered-By</span><span class="ival na-c">${hdr.powered_by}</span></div>` : '');
+}
+
+function buildVT(vt) {
+  const tot = Math.max(1, vt.total || 1);
+  return ['malicious','suspicious','clean'].map(k => {
+    const v   = vt[k] || 0;
+    const col = k === 'malicious' ? 'var(--red)' : k === 'suspicious' ? 'var(--amber)' : 'var(--lime)';
+    return `<div class="vtbar">
+      <div class="vtbar-hdr"><span>${k.toUpperCase()}</span><span>${v} / ${vt.total||0}</span></div>
+      <div class="vtbar-t"><div class="vtbar-f" style="width:${(v/tot*100).toFixed(1)}%;background:${col};"></div></div>
+    </div>`;
+  }).join('') +
+  `<div style="font-family:var(--mono);font-size:.63rem;color:var(--muted);margin-top:.5rem;">
+    Reputation: ${vt.reputation||0} · Undetected: ${vt.undetected||0}
+    ${vt.categories?.length ? ' · ' + vt.categories.join(', ') : ''}
+  </div>`;
+}
+
+function buildURLScan(us) {
+  return `
+    <div class="irow"><span class="ikey">Verdict</span>
+      <span class="ival ${us.malicious ? 'bad-c' : 'ok-c'}">${us.malicious ? '🚨 MALICIOUS' : '✅ Clean'}</span></div>
+    <div class="irow"><span class="ikey">Risk Score</span><span class="ival">${us.score||0}/100</span></div>
+    ${us.tags?.length ? `<div class="irow"><span class="ikey">Tags</span>
+      <div class="chips">${us.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div></div>` : ''}
+    ${us.scan_url ? `<div style="margin-top:.6rem;font-family:var(--mono);font-size:.63rem;">
+      <a href="${us.scan_url}" target="_blank" style="color:var(--cyan);">View full URLScan report →</a>
+    </div>` : ''}`;
+}
+
+function buildOTX(otx) {
+  return `
+    <div class="irow"><span class="ikey">Threat Pulses</span>
+      <span class="ival ${otx.pulse_count > 5 ? 'bad-c' : otx.pulse_count > 0 ? 'na-c' : 'ok-c'}">${otx.pulse_count||0}</span></div>
+    <div class="irow"><span class="ikey">Country</span><span class="ival">${otx.country||'N/A'}</span></div>`;
+}
+
+function buildIP(ip, ab) {
+  return `
+    <div class="irow"><span class="ikey">IP Address</span><span class="ival">${ip.query||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">ISP</span><span class="ival">${ip.isp||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Organisation</span><span class="ival">${ip.org||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">ASN</span><span class="ival">${ip.as||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Location</span>
+      <span class="ival">${[ip.city,ip.regionName,ip.country].filter(Boolean).join(', ')||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Timezone</span><span class="ival">${ip.timezone||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">VPN / Proxy</span>
+      <span class="ival ${ip.proxy ? 'bad-c' : 'ok-c'}">${ip.proxy ? '⚠ YES — Detected' : '✓ No'}</span></div>
+    <div class="irow"><span class="ikey">TOR Exit Node</span>
+      <span class="ival ${ip.tor ? 'bad-c' : 'ok-c'}">${ip.tor ? '⚠ YES — TOR' : '✓ No'}</span></div>
+    <div class="irow"><span class="ikey">Hosting / DC</span>
+      <span class="ival ${ip.hosting ? 'na-c' : 'ok-c'}">${ip.hosting ? 'VPS / Datacenter' : 'Regular IP'}</span></div>
+    ${ab.abuse_confidence !== undefined
+      ? `<div class="irow"><span class="ikey">Abuse Reports</span>
+           <span class="ival ${ab.abuse_confidence > 25 ? 'bad-c' : 'ok-c'}">
+             ${ab.total_reports||0} reports · ${ab.abuse_confidence||0}% confidence
+           </span></div>`
+      : ''}`;
+}
+
+function buildWHOIS(w) {
+  return `
+    <div class="irow"><span class="ikey">Registrar</span><span class="ival">${w.registrar||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Registered</span><span class="ival">${w.registered||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Expires</span><span class="ival">${w.expiry||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Last Changed</span><span class="ival">${w.last_changed||'N/A'}</span></div>
+    <div class="irow"><span class="ikey">Status</span>
+      <span class="ival">${(w.status||[]).join(', ')||'N/A'}</span></div>
+    ${w.name_servers?.length
+      ? `<div class="irow"><span class="ikey">Name Servers</span>
+           <div class="chips">${w.name_servers.map(n => `<span class="chip">${n}</span>`).join('')}</div>
+         </div>` : ''}`;
+}
+
+function buildSubs(subs) {
+  return `<div class="chips">${subs.map(s => `<span class="chip">${s}</span>`).join('')}</div>`;
+}
+
+/* ── Render: email breach ────────────────────────────────── */
+function renderEmail(d) {
+  $('res-em').classList.add('show');
+  const bd = d.breach_data || d;
+
+  if (d.error || bd.error) {
+    $('em-result').innerHTML =
+      `<div style="color:var(--amber);font-family:var(--mono);font-size:.75rem;">⚠ ${d.error || bd.error}</div>`;
+    return;
+  }
+
+  if (bd.breached) {
+    const list = (bd.breaches || []).map(b => `
+      <div style="background:rgba(255,45,85,.04);border:1px solid rgba(255,45,85,.14);
+                  border-radius:var(--r);padding:.85rem;margin-bottom:.55rem;">
+        <div style="font-family:var(--hd);font-size:.75rem;color:var(--red);margin-bottom:.35rem;">${b.name||'Unknown'}</div>
+        <div style="font-family:var(--mono);font-size:.63rem;color:var(--muted);margin-bottom:.4rem;">
+          Domain: ${b.domain||'N/A'} · Date: ${b.breach_date||'N/A'} · Records: ${(b.pwn_count||0).toLocaleString()}
+        </div>
+        ${b.data_classes?.length
+          ? `<div class="chips">${b.data_classes.map(c => `<span class="chip red">${c}</span>`).join('')}</div>`
+          : ''}
+      </div>`).join('');
+
+    $('em-result').innerHTML = `
+      <div style="margin-bottom:.9rem;"><span class="tbdg t-CRITICAL">🚨 BREACHED — ${bd.count} breach${bd.count===1?'':'es'}</span></div>
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:.8rem;">
+        <strong style="color:var(--white);">${d.email||''}</strong> was found in:
+      </div>
+      ${list}
+      <div style="background:rgba(255,165,0,.05);border:1px solid rgba(255,165,0,.15);
+                  border-radius:var(--r);padding:.8rem;font-family:var(--mono);font-size:.68rem;margin-top:.5rem;">
+        ⚠ <strong style="color:var(--amber);">Action required:</strong>
+        Change passwords on all affected services immediately. Enable 2FA everywhere.
+      </div>`;
+  } else {
+    $('em-result').innerHTML = `
+      <div style="margin-bottom:.9rem;"><span class="tbdg t-LOW">✅ NO BREACHES FOUND</span></div>
+      <div style="font-family:var(--mono);font-size:.73rem;color:var(--muted);margin-top:.7rem;">
+        <strong style="color:var(--white);">${d.email||''}</strong> was not found in any known data breaches.<br/><br/>
+        Stay vigilant — use unique passwords and enable 2FA on every account.
+      </div>`;
+  }
+}
+
+/* ── Render: password ────────────────────────────────────── */
+function renderPassword(d) {
+  $('res-pw').classList.add('show');
+  if (d.pwned) {
+    $('pw-result').innerHTML = `
+      <div style="margin-bottom:.9rem;"><span class="tbdg t-CRITICAL">🚨 PASSWORD COMPROMISED</span></div>
+      <div style="font-family:var(--mono);font-size:.78rem;margin:.7rem 0;color:var(--text);">
+        This password appears in <strong style="color:var(--red);">${d.count.toLocaleString()}</strong> leaked databases.
+      </div>
+      <div style="background:rgba(255,45,85,.05);border:1px solid rgba(255,45,85,.15);
+                  border-radius:var(--r);padding:.8rem;font-family:var(--mono);font-size:.68rem;">
+        ⚠ <strong style="color:var(--red);">Change this password immediately</strong> on every service where you use it.
+        Use a password manager to generate strong unique passwords.
+      </div>
+      <div style="margin-top:.6rem;font-family:var(--mono);font-size:.6rem;color:var(--muted);">${d.note||''}</div>`;
+  } else {
+    $('pw-result').innerHTML = `
+      <div style="margin-bottom:.9rem;"><span class="tbdg t-LOW">✅ PASSWORD NOT FOUND IN BREACHES</span></div>
+      <div style="font-family:var(--mono);font-size:.73rem;color:var(--muted);margin-top:.7rem;">
+        Not found in any known leaked databases. Still — use strong unique passwords and a password manager.<br/><br/>
+        <span style="font-size:.63rem;">${d.note||''}</span>
+      </div>`;
+  }
+}
+
+/* ── Auth ────────────────────────────────────────────────── */
+function openModal(mode) {
+  authMode        = mode;
+  const isReg     = mode === 'register';
+  $('auth-overlay').classList.add('show');
+  $('modal-h').textContent      = isReg ? '⬡ CREATE ACCOUNT' : '⬡ SIGN IN';
+  $('auth-submit').textContent  = isReg ? 'CREATE ACCOUNT'    : 'SIGN IN';
+  $('reg-fields').style.display  = isReg ? 'block' : 'none';
+  $('reg-fields2').style.display = isReg ? 'block' : 'none';
+  $('modal-foot').innerHTML = isReg
+    ? 'Already registered? <span onclick="openModal(\'login\')">Sign in</span>'
+    : 'New here? <span onclick="openModal(\'register\')">Create account</span>';
+}
+
+function closeModal() { $('auth-overlay').classList.remove('show'); }
+
+async function submitAuth() {
+  const email = ($('f-email').value || '').trim();
+  const pw    = $('f-pw').value || '';
+  if (!email || !pw) { toast('Email and password required', 'err'); return; }
+
+  const btn = $('auth-submit');
+  btn.textContent = '⟳ PLEASE WAIT…';
+  btn.disabled    = true;
+
+  const ep   = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+  const body = authMode === 'register'
+    ? { email, password: pw, name: ($('f-name').value||'').trim(), telegram_chat_id: ($('f-tg').value||'').trim() }
+    : { email, password: pw };
+
+  try {
+    const data = await apiFetch(ep, { method: 'POST', body: JSON.stringify(body) });
+    if (data.token) {
+      authToken = data.token;
+      localStorage.setItem('aegis_token', authToken);
+      closeModal();
+      toast(authMode === 'register' ? '✅ Welcome back!' : '✅ Welcome back!', 'ok');
+      onLogin();
+    } else if (data.unverified) {
+      // Email verification required
+      $('modal-h').textContent = '📧 CHECK YOUR INBOX';
+      $('auth-submit').style.display = 'none';
+      $('modal-foot').innerHTML = `
+        <div style="color:var(--muted);font-size:.68rem;line-height:1.7;">
+          A verification link was sent to <strong style="color:var(--cyan);">${email}</strong>.<br/>
+          Click the link to activate your account, then log in.
+        </div>
+        <button onclick="resendVerification('${email}')"
+          style="margin-top:.75rem;background:none;border:1px solid var(--stroke2);
+                 border-radius:3px;padding:6px 14px;color:var(--muted);
+                 font-family:var(--mono);font-size:.63rem;cursor:pointer;width:100%;">
+          Resend verification email
+        </button>`;
+    } else if (authMode === 'register' && data.email && !data.token) {
+      // Registered but email verification pending
+      $('modal-h').textContent = '📧 CHECK YOUR INBOX';
+      $('auth-submit').style.display = 'none';
+      $('modal-foot').innerHTML = `
+        <div style="color:var(--muted);font-size:.68rem;line-height:1.7;">
+          Account created! A verification email was sent to
+          <strong style="color:var(--cyan);">${email}</strong>.<br/>
+          Click the link in the email, then log in.
+        </div>
+        <button onclick="resendVerification('${email}')"
+          style="margin-top:.75rem;background:none;border:1px solid var(--stroke2);
+                 border-radius:3px;padding:6px 14px;color:var(--muted);
+                 font-family:var(--mono);font-size:.63rem;cursor:pointer;width:100%;">
+          Resend verification email
+        </button>`;
+    } else {
+      toast(data.error || 'Authentication failed', 'err');
+    }
+  } catch { toast('Backend unreachable', 'err'); }
+
+  btn.textContent = authMode === 'register' ? 'CREATE ACCOUNT' : 'SIGN IN';
+  btn.disabled    = false;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROTECT PAGE — Active Defence via Cloudflare
+// ══════════════════════════════════════════════════════════════
+
+async function connectZone() {
+  const domain  = ($('cf-domain').value  || '').trim().replace(/^https?:\/\//,'').split('/')[0];
+  const token   = ($('cf-token').value   || '').trim();
+  const zone_id = ($('cf-zoneid').value  || '').trim();
+  if (!domain || !token || !zone_id) {
+    toast('Domain, API token and Zone ID are all required', 'err'); return;
+  }
+  toast('⟳ Connecting to Cloudflare…', 'ok');
+  try {
+    const data = await apiFetch('/api/protect/connect', {
+      method: 'POST',
+      body: JSON.stringify({ domain, cf_token: token, zone_id })
+    });
+    if (data.error) { toast(data.error, 'err'); return; }
+    toast(data.message || '✅ Domain connected', 'ok');
+    $('cf-domain').value = $('cf-token').value = $('cf-zoneid').value = '';
+    loadProtectedDomains();
+  } catch { toast('Backend unreachable', 'err'); }
+}
+
+async function loadProtectedDomains() {
+  if (!authToken) return;
+  try {
+    const data = await apiFetch('/api/protect/status');
+    if (data.error) return;
+    const domains = data.protected_domains || [];
+    const list    = $('protect-list');
+    const selDef  = $('defend-domain-sel');
+    const selEmail = $('email-sec-sel');
+
+    // Update selects
+    const opts = ['<option value="">Select domain…</option>',
+                  ...domains.map(d => `<option value="${d.domain}">${d.domain}</option>`)
+                 ].join('');
+    selDef.innerHTML = opts;
+    selEmail.innerHTML = opts;
+
+    // Show/hide auto-defend panel
+    $('defend-panel').style.display = domains.length ? 'block' : 'none';
+
+    if (!domains.length) {
+      list.innerHTML = '<div style="color:var(--muted);font-family:var(--mono);font-size:.7rem;">No domains connected yet.</div>';
+      return;
+    }
+
+    list.innerHTML = domains.map(d => {
+      const gc = d.protection_score >= 80 ? '#00ff9f' : d.protection_score >= 50 ? '#ffb300' : '#ff4d6d';
+      const settings = d.settings || {};
+      const checks = [
+        { label: 'HTTPS Force',    ok: settings.always_use_https === 'on' },
+        { label: 'SSL Full',       ok: ['full','strict'].includes(settings.ssl) },
+        { label: 'Bot Fight Mode', ok: settings.bot_fight_mode === 'on' },
+        { label: 'TLS 1.2+',       ok: ['1.2','1.3'].includes(settings.min_tls_version) },
+        { label: 'Security: High', ok: ['high','under_attack'].includes(settings.security_level) },
+        { label: 'HTTPS Rewrites', ok: settings.automatic_https_rewrites === 'on' },
+      ];
+      const rows = checks.map(c =>
+        `<span style="display:inline-block;margin:.2rem .3rem 0 0;padding:2px 8px;
+                      background:${c.ok ? 'rgba(0,255,159,.08)' : 'rgba(255,77,109,.08)'};
+                      border:1px solid ${c.ok ? 'rgba(0,255,159,.25)' : 'rgba(255,77,109,.25)'};
+                      border-radius:2px;font-size:.6rem;color:${c.ok ? '#00ff9f' : '#ff4d6d'};">
+           ${c.ok ? '✓' : '✗'} ${c.label}</span>`
+      ).join('');
+
+      return `<div style="border:1px solid var(--stroke2);border-radius:4px;padding:.75rem;margin-bottom:.6rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+          <span style="color:var(--cyan);font-family:var(--mono);font-size:.75rem;font-weight:700;">${d.domain}</span>
+          <span style="color:${gc};font-size:.7rem;font-weight:700;">${d.grade} · ${d.protection_score}/100</span>
+        </div>
+        <div style="margin-bottom:.5rem;">${rows}</div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem;">
+          <button onclick="hardenDomain('${d.domain}')"
+            style="padding:4px 10px;background:rgba(0,212,255,.08);border:1px solid var(--stroke2);
+                   border-radius:2px;color:var(--cyan);font-family:var(--mono);font-size:.6rem;cursor:pointer;">
+            ⚡ HARDEN
+          </button>
+          <button onclick="viewBlockedIPs('${d.domain}')"
+            style="padding:4px 10px;background:rgba(255,77,109,.08);border:1px solid var(--stroke2);
+                   border-radius:2px;color:#ff4d6d;font-family:var(--mono);font-size:.6rem;cursor:pointer;">
+            🚫 BLOCKED IPs (${d.blocked_ip_count})
+          </button>
+          <button onclick="disconnectZone('${d.domain}')"
+            style="padding:4px 10px;background:none;border:1px solid var(--stroke2);
+                   border-radius:2px;color:var(--muted);font-family:var(--mono);font-size:.6rem;cursor:pointer;">
+            ✕ DISCONNECT
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error('loadProtectedDomains', e); }
+}
+
+async function runAutoDefend() {
+  const domain = $('defend-domain-sel').value;
+  if (!domain) { toast('Select a domain first', 'err'); return; }
+
+  const result = $('defend-result');
+  result.style.display = 'block';
+  result.innerHTML = `<div style="color:var(--muted);font-size:.68rem;font-family:var(--mono);">
+    ⟳ Running full AEGIS scan + pushing Cloudflare defences…<br/>
+    <span style="color:var(--muted);font-size:.62rem;">This takes 30–45 seconds</span>
+  </div>`;
+
+  try {
+    const data = await apiFetch('/api/protect/auto-defend', {
+      method: 'POST',
+      body: JSON.stringify({ domain })
+    });
+    if (data.error) { toast(data.error, 'err'); result.style.display = 'none'; return; }
+
+    const def    = data.defence || {};
+    const scan   = data.scan   || {};
+    const harden = def.hardening || {};
+    const emailg = (def.email_security || {}).grade || 'N/A';
+    const ips    = def.ips_blocked || [];
+    const applied= harden.applied || [];
+    const hc     = scan.health_score >= 80 ? '#00ff9f' : scan.health_score >= 50 ? '#ffb300' : '#ff4d6d';
+    const tc     = ['CRITICAL','HIGH'].includes(scan.threat_level) ? '#ff4d6d' : scan.threat_level === 'MEDIUM' ? '#ffb300' : '#00ff9f';
+
+    result.innerHTML = `
+    <div style="border:1px solid var(--stroke2);border-radius:4px;padding:.75rem;">
+      <div style="color:#00d4ff;font-family:var(--mono);font-size:.7rem;font-weight:700;
+                  letter-spacing:2px;margin-bottom:.6rem;">✅ AUTO-DEFEND COMPLETE</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.6rem;">
+        <div style="padding:.4rem;background:rgba(0,212,255,.05);border-radius:3px;font-size:.63rem;">
+          <span style="color:var(--muted);">HEALTH SCORE</span><br/>
+          <span style="color:${hc};font-size:1.1rem;font-weight:900;">${scan.health_score}/100</span>
+        </div>
+        <div style="padding:.4rem;background:rgba(0,212,255,.05);border-radius:3px;font-size:.63rem;">
+          <span style="color:var(--muted);">THREAT LEVEL</span><br/>
+          <span style="color:${tc};font-size:1.1rem;font-weight:900;">${scan.threat_level}</span>
+        </div>
+        <div style="padding:.4rem;background:rgba(0,212,255,.05);border-radius:3px;font-size:.63rem;">
+          <span style="color:var(--muted);">IPs BLOCKED AT EDGE</span><br/>
+          <span style="color:#ff4d6d;font-size:1.1rem;font-weight:900;">${ips.length}</span>
+        </div>
+        <div style="padding:.4rem;background:rgba(0,212,255,.05);border-radius:3px;font-size:.63rem;">
+          <span style="color:var(--muted);">EMAIL SECURITY</span><br/>
+          <span style="color:#00d4ff;font-size:1.1rem;font-weight:900;">${emailg}</span>
+        </div>
+      </div>
+      ${ips.length ? `
+      <div style="margin-bottom:.5rem;">
+        <div style="color:var(--muted);font-size:.62rem;margin-bottom:.3rem;">IPs BLOCKED AT CLOUDFLARE EDGE:</div>
+        ${ips.map(b => `<div style="font-family:var(--mono);font-size:.63rem;color:#ff4d6d;">🚫 ${b.ip} — ${b.reason}</div>`).join('')}
+      </div>` : ''}
+      ${applied.length ? `
+      <div style="margin-bottom:.5rem;">
+        <div style="color:var(--muted);font-size:.62rem;margin-bottom:.3rem;">SETTINGS HARDENED:</div>
+        ${applied.map(a => `<div style="font-family:var(--mono);font-size:.63rem;color:#00ff9f;">✅ ${a}</div>`).join('')}
+      </div>` : ''}
+      <div style="color:var(--muted);font-size:.62rem;margin-top:.4rem;font-style:italic;">
+        ${def.summary || ''}
+      </div>
+    </div>`;
+    loadProtectedDomains();
+  } catch { toast('Backend unreachable', 'err'); result.style.display = 'none'; }
+}
+
+async function hardenDomain(domain) {
+  toast(`⟳ Hardening ${domain}…`, 'ok');
+  try {
+    const data = await apiFetch('/api/protect/harden', {
+      method: 'POST', body: JSON.stringify({ domain })
+    });
+    toast(data.summary || '✅ Hardening applied', 'ok');
+    loadProtectedDomains();
+  } catch { toast('Backend unreachable', 'err'); }
+}
+
+async function viewBlockedIPs(domain) {
+  try {
+    const data = await apiFetch(`/api/protect/blocked-ips?domain=${encodeURIComponent(domain)}`);
+    if (data.error) { toast(data.error, 'err'); return; }
+    const ips = data.blocked_ips || [];
+    if (!ips.length) { toast(`No IPs currently blocked for ${domain}`, 'ok'); return; }
+    alert(`Blocked IPs for ${domain} (${ips.length}):\n\n` +
+          ips.map(b => `${b.ip}  —  ${b.note || 'no note'}`).join('\n'));
+  } catch { toast('Backend unreachable', 'err'); }
+}
+
+async function checkEmailSecurity() {
+  const domain = $('email-sec-sel').value;
+  if (!domain) { toast('Select a domain first', 'err'); return; }
+
+  const result = $('email-sec-result');
+  result.style.display = 'block';
+  result.innerHTML = '<div style="color:var(--muted);font-size:.68rem;">⟳ Checking SPF / DKIM / DMARC…</div>';
+
+  try {
+    const data = await apiFetch(`/api/protect/email-security?domain=${encodeURIComponent(domain)}`);
+    if (data.error) { result.innerHTML = `<div style="color:#ff4d6d;font-size:.68rem;">${data.error}</div>`; return; }
+
+    const gc = data.score >= 80 ? '#00ff9f' : data.score >= 50 ? '#ffb300' : '#ff4d6d';
+    const checks = [
+      { label: 'SPF',   ok: data.spf?.present,   val: data.spf?.record   || 'MISSING' },
+      { label: 'DMARC', ok: data.dmarc?.present,  val: data.dmarc?.strength || (data.dmarc?.record || 'MISSING') },
+      { label: 'DKIM',  ok: data.dkim?.present,   val: data.dkim?.selector ? `selector: ${data.dkim.selector}` : 'Not found' },
+      { label: 'MX',    ok: data.mx?.present,     val: (data.mx?.records || []).join(', ') || 'MISSING' },
+    ];
+    const rows = checks.map(c =>
+      `<div style="display:flex;align-items:baseline;gap:.5rem;padding:.3rem 0;
+                   border-bottom:1px solid var(--stroke2);">
+        <span style="color:${c.ok ? '#00ff9f' : '#ff4d6d'};font-size:.9rem;">${c.ok ? '✓' : '✗'}</span>
+        <span style="color:var(--cyan);font-family:var(--mono);font-size:.68rem;min-width:60px;">${c.label}</span>
+        <span style="color:var(--muted);font-size:.63rem;word-break:break-all;">${c.val}</span>
+      </div>`
+    ).join('');
+
+    const fixes = (data.fixes || []).map(f =>
+      `<div style="margin:.4rem 0;padding:.5rem;background:rgba(255,77,109,.06);
+                   border-left:2px solid #ff4d6d;border-radius:0 3px 3px 0;">
+        <div style="color:#ff4d6d;font-size:.65rem;font-weight:700;">${f.type} — ${f.severity}</div>
+        <div style="color:var(--muted);font-size:.62rem;margin:.2rem 0;">${f.problem}</div>
+        <div style="color:#00ff9f;font-family:var(--mono);font-size:.6rem;word-break:break-all;">FIX: ${f.fix}</div>
+      </div>`
+    ).join('');
+
+    result.innerHTML = `
+    <div style="border:1px solid var(--stroke2);border-radius:4px;padding:.75rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;">
+        <span style="color:var(--cyan);font-family:var(--mono);font-size:.7rem;">EMAIL SECURITY — ${domain}</span>
+        <span style="color:${gc};font-size:1.1rem;font-weight:900;">${data.grade} (${data.score}/100)</span>
+      </div>
+      ${rows}
+      ${fixes ? `<div style="margin-top:.75rem;"><div style="color:var(--muted);font-size:.62rem;margin-bottom:.3rem;letter-spacing:1px;">FIXES REQUIRED:</div>${fixes}</div>` : ''}
+      ${!fixes ? '<div style="color:#00ff9f;font-size:.68rem;margin-top:.5rem;">✅ Email security is fully configured</div>' : ''}
+    </div>`;
+  } catch { toast('Backend unreachable', 'err'); result.style.display = 'none'; }
+}
+
+async function disconnectZone(domain) {
+  if (!confirm(`Disconnect ${domain} from AEGIS Active Defence?`)) return;
+  try {
+    const data = await apiFetch('/api/protect/disconnect', {
+      method: 'DELETE', body: JSON.stringify({ domain })
+    });
+    toast(data.message || '✅ Disconnected', 'ok');
+    loadProtectedDomains();
+  } catch { toast('Backend unreachable', 'err'); }
+}
+
+async function resendVerification(email) {
+  try {
+    const data = await apiFetch('/api/auth/resend-verification',
+      { method: 'POST', body: JSON.stringify({ email }) });
+    toast(data.message || '📧 Verification email sent', 'ok');
+  } catch { toast('Could not resend — check backend', 'err'); }
+}
+
+function doLogout() {
+  authToken = '';
+  localStorage.removeItem('aegis_token');
+  hide('btn-logout');
+  show('btn-login');
+  show('btn-register');
+  hide('ntab-monitor');
+  $('ntab-monitor').style.display = 'none';
+  hide('ntab-protect');
+  $('ntab-protect').style.display = 'none';
+  goPage('dashboard');
+  toast('Logged out', 'info');
+}
+
+function onLogin() {
+  hide('btn-login');
+  hide('btn-register');
+  show('btn-logout');
+  $('ntab-monitor').style.display = '';
+  $('ntab-protect').style.display = '';
+  loadProtectedDomains();
+  loadMonitorList();
+}
+
+/* ── Monitor ─────────────────────────────────────────────── */
+async function loadMonitorList() {
+  if (!authToken) return;
+  try {
+    const data  = await apiFetch('/api/monitor/list');
+    const sites = data.monitored || [];
+    $('mon-list').innerHTML = sites.length === 0
+      ? '<div style="color:var(--muted);font-family:var(--mono);font-size:.7rem;">No sites monitored yet.</div>'
+      : sites.map(s => `
+          <div class="mrow">
+            <span class="mdom">${s}</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-cy btn-sm" onclick="quickScan('${s}')">SCAN</button>
+              <button class="btn btn-red btn-sm" onclick="removeMonitor('${s}')">REMOVE</button>
+            </div>
+          </div>`).join('');
+  } catch { /* silently fail */ }
+}
+
+async function addMonitor() {
+  const domain = ($('mon-inp').value || '').trim();
+  if (!domain) return;
+  if (!authToken) { toast('Login to use monitoring', 'err'); return; }
+  try {
+    const data = await apiFetch('/api/monitor/add',
+      { method: 'POST', body: JSON.stringify({ domain }) });
+    toast(data.message || '✅ Added', 'ok');
+    $('mon-inp').value = '';
+    loadMonitorList();
+  } catch { toast('Could not add monitor', 'err'); }
+}
+
+async function removeMonitor(domain) {
+  try {
+    const data = await apiFetch('/api/monitor/remove',
+      { method: 'POST', body: JSON.stringify({ domain }) });
+    toast(data.message || 'Removed', 'info');
+    loadMonitorList();
+  } catch { toast('Error removing', 'err'); }
+}
+
+async function quickAddMonitor(domain) {
+  if (!authToken) { toast('Login to enable monitoring', 'err'); return; }
+  $('mon-inp').value = domain;
+  await addMonitor();
+  goPage('monitor');
+}
+
+function quickScan(domain) {
+  $('ws-inp').value = domain;
+  setStab('ws');
+  goPage('scan');
+  doScan('ws');
+}
+
+async function saveTgSettings() {
+  if (!authToken) { toast('Login first', 'err'); return; }
+  const tg = ($('tg-inp').value || '').trim();
+  try {
+    const data = await apiFetch('/api/monitor/settings',
+      { method: 'POST', body: JSON.stringify({ telegram_chat_id: tg }) });
+    toast(data.message || '✅ Saved', 'ok');
+  } catch { toast('Error saving', 'err'); }
+}
+
+/* ── Live attack feed ────────────────────────────────────── */
+const atkCounts = {};
+
+function rndIp() {
+  return Array.from({ length: 4 }, () => ~~(Math.random() * 256)).join('.');
+}
+
+function addFeedEntry(target) {
+  const feed    = $('feed');
+  const now     = new Date().toLocaleTimeString();
+  const type    = ATK_TYPES[~~(Math.random() * ATK_TYPES.length)];
+  const ip      = rndIp();
+  const geo     = GEOS[~~(Math.random() * GEOS.length)];
+  const blocked = Math.random() > 0.6;
+
+  atkCounts[type] = (atkCounts[type] || 0) + 1;
+  const top = Object.entries(atkCounts).sort((a, b) => b[1] - a[1])[0];
+  if (top) $('feed-top').textContent = top[0];
+
+  if (blocked) {
+    feedBlockCount++;
+    $('feed-blocked').textContent = feedBlockCount;
+  }
+
+  const el  = document.createElement('div');
+  el.className = 'fe';
+  el.innerHTML =
+    `<span class="fe-t">${now}</span> `
+    + `<span class="fe-ip">${ip}</span> [${geo}] → ${target}`
+    + `<span class="fe-atk"> ${type}</span>`
+    + (blocked ? `<span class="fe-blk"> ⛔ BLOCKED</span>` : '');
+  feed.insertBefore(el, feed.firstChild);
+  if (feed.children.length > 80) feed.removeChild(feed.lastChild);
+}
+
+setInterval(() => {
+  addFeedEntry(['api.example.com','github.com','cloudflare.com','portal.myapp.io'][~~(Math.random() * 4)]);
+  $('feed-rate').textContent = (~~(Math.random() * 9) + 2).toString();
+}, 2600);
+
+/* ── Demo fallback (shown when backend is unreachable) ───── */
+function demoData(domain) {
+  return {
+    domain,
+    scanned_at:  new Date().toISOString(),
+    cached:      false,
+    ssl_grade:   'B',
+    health_score: 72,
+    ai_threat: {
+      score:   18,
+      level:   'LOW',
+      reasons: [
+        '⚠ Some security headers missing — 50/100 (+7pts)',
+        '✅ No malware detected across 70 vendors',
+      ],
+    },
+    virustotal: { malicious: 0, suspicious: 1, clean: 68, undetected: 1, total: 70, reputation: 5, categories: ['technology'] },
+    abuseipdb:  { abuse_confidence: 0, total_reports: 0, country: 'US', isp: 'Edgecast Inc.' },
+    ip_reputation: {
+      query: '93.184.216.34', isp: 'Edgecast Inc.', org: 'Edgecast Inc.',
+      as: 'AS15133 Edgecast Inc.', country: 'United States', countryCode: 'US',
+      city: 'Los Angeles', regionName: 'California',
+      timezone: 'America/Los_Angeles', proxy: false, tor: false, hosting: true,
+    },
+    security_headers: {
+      headers: {
+        'Strict-Transport-Security': 'max-age=31536000',
+        'Content-Security-Policy':   null,
+        'X-Frame-Options':           'DENY',
+        'X-Content-Type-Options':    'nosniff',
+        'Referrer-Policy':           null,
+        'Permissions-Policy':        null,
+        'X-XSS-Protection':          '1; mode=block',
+        'Cross-Origin-Opener-Policy':null,
+      },
+      score: 50, grade: 'C', server_banner: 'ECS (lga/1389)', powered_by: '',
+    },
+    subdomains: [`www.${domain}`, `mail.${domain}`, `api.${domain}`, `cdn.${domain}`, `dev.${domain}`],
+    whois: {
+      registrar: 'ICANN', registered: '1992-01-01', expiry: '2026-01-01',
+      last_changed: '2023-05-15', status: ['active'],
+      name_servers: ['ns1.example.com', 'ns2.example.com'],
+    },
+    urlscan:   { malicious: false, score: 0, tags: [] },
+    alienvault:{ pulse_count: 0, country: 'US' },
+    dns_records: `A\t${domain}\t93.184.216.34\nMX\t${domain}\tmail.${domain}\nNS\t${domain}\tns1.${domain}\nTXT\t${domain}\tv=spf1 include:_spf.google.com ~all`,
+  };
+}
+
+/* ── Boot ────────────────────────────────────────────────── */
+
+// Seed live feed with initial entries
+for (let i = 0; i < 12; i++) {
+  setTimeout(() =>
+    addFeedEntry(['github.com','cloudflare.com','google.com','api.example.com'][i % 4]),
+  i * 130);
+}
+
+// Wire up backend status check
+checkBackend();
+
+// Restore session if token exists
+if (authToken) onLogin();
+</script>
+</body>
+</html>
