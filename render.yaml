@@ -8,6 +8,8 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.9"
       - key: BACKEND_URL
         sync: false
       - key: FRONTEND_URL
