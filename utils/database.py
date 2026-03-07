@@ -31,12 +31,18 @@ import json
 
 # ── Detect which mode to use ──────────────────────────────────
 _DB_URL    = os.getenv("SUPABASE_DB_URL", "")   # postgres://user:pw@host:5432/db
+def _is_redis_url(url):
+    return any(url.startswith(s) for s in ["redis://", "rediss://", "unix://"])
+
 _REDIS_URL = os.getenv("REDIS_URL", "").strip()
-if _REDIS_URL and "://" not in _REDIS_URL:
-    _REDIS_URL = f"redis://{_REDIS_URL}"
+if _REDIS_URL and not _is_redis_url(_REDIS_URL):
+    if "://" not in _REDIS_URL:
+        _REDIS_URL = f"redis://{_REDIS_URL}"
+    else:
+        _REDIS_URL = "" # Wrong scheme (e.g. http://)
 
 USE_POSTGRES = bool(_DB_URL)
-USE_REDIS    = bool(_REDIS_URL)
+USE_REDIS    = False # Will be verified below
 
 
 # ══════════════════════════════════════════════════════════════
@@ -486,10 +492,20 @@ else:
 # ══════════════════════════════════════════════════════════════
 #  REDIS CACHE LAYER  (Upstash free tier)
 # ══════════════════════════════════════════════════════════════
-if USE_REDIS:
-    import redis as _redis_lib
-    _redis = _redis_lib.from_url(_REDIS_URL, decode_responses=True)
+if _REDIS_URL:
+    try:
+        import redis as _redis_lib
+        _redis = _redis_lib.from_url(_REDIS_URL, decode_responses=True)
+        # We don't ping here to avoid blocking startup, but if from_url 
+        # fails (e.g. scheme error), it will be caught.
+        USE_REDIS = True
+        print("[AEGIS] Cache mode: Redis (Upstash) ✅")
+    except Exception as e:
+        print(f"[AEGIS] Redis connection error: {e}. Falling back to memory.")
+        USE_REDIS = False
 
+if USE_REDIS:
+    # _redis is already initialized above
     def cache_get(key: str, max_age: int = 300) -> dict | None:
         try:
             raw = _redis.get(f"aegis:cache:{key}")

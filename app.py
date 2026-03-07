@@ -63,8 +63,12 @@ def _real_ip() -> str:
 
 # ── Rate limiter ──────────────────────────────────────────────
 _redis_url = os.getenv("REDIS_URL", "").strip()
-if _redis_url and "://" not in _redis_url:
-    _redis_url = f"redis://{_redis_url}"
+if _redis_url:
+    if not any(_redis_url.startswith(s) for s in ["redis://", "rediss://", "unix://"]):
+        if "://" not in _redis_url:
+            _redis_url = f"redis://{_redis_url}"
+        else:
+            _redis_url = ""
 
 _limiter_storage = _redis_url if _redis_url else "memory://"
 
