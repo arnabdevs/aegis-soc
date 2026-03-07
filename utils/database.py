@@ -1,3 +1,4 @@
+# FINGERPRINT: 2026-03-07-v5.4-FORCED-REDEPLOY
 """
 utils/database.py
 ━━━━━━━━━━━━━━━━━

@@ -1,6 +1,7 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
-║        AEGIS SOC ENGINE v5.3 — HARDENED EDITION             ║
+║        AEGIS SOC ENGINE v5.4 — HARDENED EDITION             ║
+# FINGERPRINT: 2026-03-07-v5.4-FORCED-REDEPLO
 ║        Owner : Arnab Kumar Das                               ║
 ║        GitHub: https://github.com/arnabdevs                ║
 ╚══════════════════════════════════════════════════════════════╝
