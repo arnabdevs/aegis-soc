@@ -5,7 +5,7 @@ Writes to PostgreSQL (via database.py) when configured,
 otherwise falls back to in-memory lists.
 """
 import datetime
-from utils.database import log_event_db, log_api_call_db
+from utils.db_core import log_event_db, log_api_call_db
 
 
 def log_event(event_type: str, **kwargs) -> dict:

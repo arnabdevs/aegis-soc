@@ -21,7 +21,7 @@ Endpoints:
 """
 import re
 from flask import Blueprint, request, jsonify
-import utils.database as dbl
+import utils.db_core as dbl
 from utils.auth   import token_required
 from utils.logger import log_event
 from services.cloudflare_service import (

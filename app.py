@@ -30,7 +30,7 @@ from routes.scan    import scan_bp
 from routes.monitor import monitor_bp
 from routes.admin   import admin_bp
 from routes.protect import protect_bp
-import utils.database as dbl
+import utils.db_core as dbl
 from utils.logger import log_event
 from services.monitor_daemon import start_monitor_daemon, run_daily_monitor
 

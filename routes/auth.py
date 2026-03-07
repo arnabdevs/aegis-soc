@@ -15,7 +15,7 @@ from email.mime.multipart import MIMEMultipart
 from flask import Blueprint, request, jsonify
 from flask_limiter.util import get_remote_address
 
-import utils.database as dbl
+import utils.db_core as dbl
 from utils.auth   import (hash_password, check_password,
                            make_token, token_required, email_verify_token)
 from utils.logger import log_event

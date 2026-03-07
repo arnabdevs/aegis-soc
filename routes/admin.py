@@ -1,7 +1,7 @@
 """routes/admin.py — IP blocking, event logs, admin stats."""
 import datetime
 from flask import Blueprint, request, jsonify
-import utils.database as dbl
+import utils.db_core as dbl
 from utils.auth   import token_required
 from utils.logger import log_event
 

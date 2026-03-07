@@ -1,7 +1,7 @@
 """routes/monitor.py — Daily monitoring management."""
 import re
 from flask import Blueprint, request, jsonify
-import utils.database as dbl
+import utils.db_core as dbl
 from utils.auth import token_required
 
 monitor_bp = Blueprint("monitor", __name__)
