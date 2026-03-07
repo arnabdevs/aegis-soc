@@ -32,15 +32,11 @@ import json
 # ── Detect which mode to use ──────────────────────────────────
 _DB_URL    = os.getenv("SUPABASE_DB_URL", "")   # postgres://user:pw@host:5432/db
 _REDIS_URL = os.getenv("REDIS_URL", "").strip()
-
-def _is_redis_url_valid(url):
-    return any(url.startswith(s) for s in ["redis://", "rediss://", "unix://"])
+if _REDIS_URL and "://" not in _REDIS_URL:
+    _REDIS_URL = f"redis://{_REDIS_URL}"
 
 USE_POSTGRES = bool(_DB_URL)
-USE_REDIS    = bool(_REDIS_URL) and _is_redis_url_valid(_REDIS_URL)
-
-if bool(_REDIS_URL) and not _is_redis_url_valid(_REDIS_URL):
-    print(f"[AEGIS] WARNING: Invalid REDIS_URL scheme. Expected redis://, rediss:// or unix://. Got: {_REDIS_URL[:10]}...")
+USE_REDIS    = bool(_REDIS_URL)
 
 
 # ══════════════════════════════════════════════════════════════
