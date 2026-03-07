@@ -100,7 +100,7 @@ if USE_POSTGRES:
         );
 
         INSERT INTO stats (key, value) VALUES
-            ('total_scans', 0), ('high_risk', 0)
+            ('total_scans', 0), ('high_risk', 0), ('last_monitor_run', 0)
         ON CONFLICT DO NOTHING;
         """
         with _conn() as con:
@@ -328,6 +328,20 @@ if USE_POSTGRES:
 
     print("[AEGIS] Database mode: PostgreSQL (Supabase) ✅")
 
+    # ── Monitor persistence ───────────────────────────────────
+    def get_last_monitor_run() -> int:
+        with _conn() as con:
+            with con.cursor() as cur:
+                cur.execute("SELECT value FROM stats WHERE key = 'last_monitor_run'")
+                row = cur.fetchone()
+                return row["value"] if row else 0
+
+    def set_last_monitor_run(ts: int) -> None:
+        with _conn() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE stats SET value = %s WHERE key = 'last_monitor_run'", (ts,))
+            con.commit()
+
 
 # ══════════════════════════════════════════════════════════════
 #  IN-MEMORY LAYER  (local dev / no SUPABASE_DB_URL set)
@@ -458,6 +472,13 @@ else:
 
     def clear_failed_logins(ip: str) -> None:
         _mem["failed_logins"].pop(ip, None)
+
+    # Monitor persistence
+    def get_last_monitor_run() -> int:
+        return _mem["stats"].get("last_monitor_run", 0)
+
+    def set_last_monitor_run(ts: int) -> None:
+        _mem["stats"]["last_monitor_run"] = ts
 
     print("[AEGIS] Database mode: In-memory (set SUPABASE_DB_URL for PostgreSQL)")
 

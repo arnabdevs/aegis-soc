@@ -85,33 +85,32 @@ def _scan_domain(domain: str) -> dict:
     return results
 
 
-def _daemon_loop():
-    while True:
-        time.sleep(86400)
-        import utils.database as dbl
-        users = dbl.get_all_users()
-        print(f"[AEGIS] Daily monitor — {len(users)} users")
+def run_daily_monitor():
+    """Execute one full cycle of scanning for all users."""
+    import utils.database as dbl
+    users = dbl.get_all_users()
+    print(f"[AEGIS] Daily monitor — {len(users)} users")
 
-        for user in users:
-            email   = user.get("email", "")
-            chat_id = user.get("telegram_chat_id", "")
+    for user in users:
+        email   = user.get("email", "")
+        chat_id = user.get("telegram_chat_id", "")
 
-            for domain in user.get("monitored", []):
-                try:
-                    r      = _scan_domain(domain)
-                    health = r.get("health_score", 0)
-                    threat = r.get("ai_threat", {})
-                    lvl    = threat.get("level", "N/A")
-                    tscore = threat.get("score", 0)
-                    ssl    = r.get("ssl_grade", "N/A")
-                    reasons= threat.get("reasons", [])
-                    now    = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-                    emoji  = "🟢" if health >= 80 else "🟡" if health >= 50 else "🔴"
-                    hcol   = "#00ff9f" if health >= 80 else "#ffb300" if health >= 50 else "#ff4d6d"
-                    tcol   = "#ff4d6d" if lvl in ("CRITICAL","HIGH") else "#ffb300" if lvl == "MEDIUM" else "#00ff9f"
-                    rows   = "".join(f'<li style="margin:.3rem 0;">{r}</li>' for r in reasons)
+        for domain in user.get("monitored", []):
+            try:
+                r      = _scan_domain(domain)
+                health = r.get("health_score", 0)
+                threat = r.get("ai_threat", {})
+                lvl    = threat.get("level", "N/A")
+                tscore = threat.get("score", 0)
+                ssl    = r.get("ssl_grade", "N/A")
+                reasons= threat.get("reasons", [])
+                now    = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+                emoji  = "🟢" if health >= 80 else "🟡" if health >= 50 else "🔴"
+                hcol   = "#00ff9f" if health >= 80 else "#ffb300" if health >= 50 else "#ff4d6d"
+                tcol   = "#ff4d6d" if lvl in ("CRITICAL","HIGH") else "#ffb300" if lvl == "MEDIUM" else "#00ff9f"
+                rows   = "".join(f'<li style="margin:.3rem 0;">{r}</li>' for r in reasons)
 
-                    html = f"""
+                html = f"""
 <div style="font-family:monospace;background:#020408;color:#c8e0f0;
             padding:24px;border-radius:8px;max-width:600px;">
   <h2 style="color:#00d4ff;letter-spacing:3px;">🛡️ AEGIS DAILY HEALTH REPORT</h2>
@@ -137,67 +136,81 @@ def _daemon_loop():
   </div>
 </div>"""
 
-                    # ── Auto-defend if zone is connected ──────────────────
-                    auto_defend_report = None
-                    cfg = user.get("cf_zones", {}).get(domain)
-                    if cfg:
-                        try:
-                            from services.cloudflare_service import auto_defend
-                            auto_defend_report = auto_defend(
-                                cfg["cf_token"], cfg["zone_id"], domain, r
-                            )
-                            print(f"[AEGIS] Auto-defend → {domain}: {auto_defend_report.get('summary','')}")
-                        except Exception as ae:
-                            print(f"[AEGIS] Auto-defend error for {domain}: {ae}")
+                # ── Auto-defend if zone is connected ──────────────────
+                auto_defend_report = None
+                cfg = user.get("cf_zones", {}).get(domain)
+                if cfg:
+                    try:
+                        from services.cloudflare_service import auto_defend
+                        auto_defend_report = auto_defend(
+                            cfg["cf_token"], cfg["zone_id"], domain, r
+                        )
+                        print(f"[AEGIS] Auto-defend → {domain}: {auto_defend_report.get('summary','')}")
+                    except Exception as ae:
+                        print(f"[AEGIS] Auto-defend error for {domain}: {ae}")
 
-                    # ── Build email with auto-defend section ──────────────
-                    defend_section = ""
+                # ── Build email with auto-defend section ──────────────
+                defend_section = ""
+                if auto_defend_report:
+                    ips_blocked = auto_defend_report.get("ips_blocked", [])
+                    applied     = auto_defend_report.get("hardening", {}).get("applied", [])
+                    email_grade = auto_defend_report.get("email_security", {}).get("grade", "N/A")
+                    ip_rows = "".join(
+                        f'<li style="margin:.2rem 0;color:#ff4d6d;">'
+                        f'🚫 Blocked {b["ip"]} — {b["reason"]}</li>'
+                        for b in ips_blocked
+                    )
+                    fix_rows = "".join(
+                        f'<li style="margin:.2rem 0;color:#00ff9f;">'
+                        f'✅ {a}</li>'
+                        for a in applied
+                    )
+                    defend_section = f"""
+<h3 style="color:#ff4d6d;margin:16px 0 8px;letter-spacing:2px;">🛡️ AUTO-DEFEND ACTIONS</h3>
+<ul style="color:#c8e0f0;padding-left:20px;">
+{ip_rows if ip_rows else '<li style="color:#3a6a8a;">No IPs auto-blocked this cycle</li>'}
+{fix_rows}
+<li style="margin:.2rem 0;">📧 Email security grade: <strong style="color:#00d4ff;">{email_grade}</strong></li>
+</ul>"""
+
+                html_final = html.replace("</div>", defend_section + "</div>", 1) if defend_section else html
+
+                _send_email(email,
+                            f"[AEGIS] {domain} — Health {health}/100 | {lvl} Risk",
+                            html_final)
+                if chat_id:
+                    defend_line = ""
                     if auto_defend_report:
-                        ips_blocked = auto_defend_report.get("ips_blocked", [])
-                        applied     = auto_defend_report.get("hardening", {}).get("applied", [])
-                        email_grade = auto_defend_report.get("email_security", {}).get("grade", "N/A")
-                        ip_rows = "".join(
-                            f'<li style="margin:.2rem 0;color:#ff4d6d;">'
-                            f'🚫 Blocked {b["ip"]} — {b["reason"]}</li>'
-                            for b in ips_blocked
-                        )
-                        fix_rows = "".join(
-                            f'<li style="margin:.2rem 0;color:#00ff9f;">'
-                            f'✅ {a}</li>'
-                            for a in applied
-                        )
-                        defend_section = f"""
-  <h3 style="color:#ff4d6d;margin:16px 0 8px;letter-spacing:2px;">🛡️ AUTO-DEFEND ACTIONS</h3>
-  <ul style="color:#c8e0f0;padding-left:20px;">
-    {ip_rows if ip_rows else '<li style="color:#3a6a8a;">No IPs auto-blocked this cycle</li>'}
-    {fix_rows}
-    <li style="margin:.2rem 0;">📧 Email security grade: <strong style="color:#00d4ff;">{email_grade}</strong></li>
-  </ul>"""
+                        nb = len(auto_defend_report.get("ips_blocked", []))
+                        na = len(auto_defend_report.get("hardening", {}).get("applied", []))
+                        defend_line = f"\n🛡️ Auto-defend: {nb} IPs blocked, {na} settings hardened"
+                    _send_telegram(
+                        chat_id,
+                        f"🛡️ <b>AEGIS Daily Report</b>\n\n"
+                        f"🌐 <code>{domain}</code>\n"
+                        f"{emoji} Health: <b>{health}/100</b>\n"
+                        f"⚠ Threat: <b>{lvl}</b> ({tscore}/100)\n"
+                        f"🔒 SSL: <b>{ssl}</b>"
+                        + defend_line + "\n\n"
+                        + "\n".join(f"• {rr}" for rr in reasons[:5]),
+                    )
+                print(f"[AEGIS] Report → {email} | {domain} | {health} | {lvl}")
+            except Exception as exc:
+                print(f"[AEGIS] Monitor error for {domain}: {exc}")
 
-                    html_final = html.replace("</div>", defend_section + "</div>", 1) if defend_section else html
 
-                    _send_email(email,
-                                f"[AEGIS] {domain} — Health {health}/100 | {lvl} Risk",
-                                html_final)
-                    if chat_id:
-                        defend_line = ""
-                        if auto_defend_report:
-                            nb = len(auto_defend_report.get("ips_blocked", []))
-                            na = len(auto_defend_report.get("hardening", {}).get("applied", []))
-                            defend_line = f"\n🛡️ Auto-defend: {nb} IPs blocked, {na} settings hardened"
-                        _send_telegram(
-                            chat_id,
-                            f"🛡️ <b>AEGIS Daily Report</b>\n\n"
-                            f"🌐 <code>{domain}</code>\n"
-                            f"{emoji} Health: <b>{health}/100</b>\n"
-                            f"⚠ Threat: <b>{lvl}</b> ({tscore}/100)\n"
-                            f"🔒 SSL: <b>{ssl}</b>"
-                            + defend_line + "\n\n"
-                            + "\n".join(f"• {rr}" for rr in reasons[:5]),
-                        )
-                    print(f"[AEGIS] Report → {email} | {domain} | {health} | {lvl}")
-                except Exception as exc:
-                    print(f"[AEGIS] Monitor error for {domain}: {exc}")
+def _daemon_loop():
+    import utils.database as dbl
+    while True:
+        last_run = dbl.get_last_monitor_run()
+        now_ts   = int(time.time())
+        # Check if we need to run or if we just woke up from a long sleep
+        if (now_ts - last_run) > 86400:
+            dbl.set_last_monitor_run(now_ts)
+            run_daily_monitor()
+        
+        # Check every hour
+        time.sleep(3600)
 
 
 def start_monitor_daemon():

@@ -29,7 +29,7 @@ from routes.admin   import admin_bp
 from routes.protect import protect_bp
 import utils.database as dbl
 from utils.logger import log_event
-from services.monitor_daemon import start_monitor_daemon
+from services.monitor_daemon import start_monitor_daemon, run_daily_monitor
 
 load_dotenv()
 
@@ -77,9 +77,10 @@ limiter = Limiter(
 print(f"[AEGIS] Rate limiter: {'Redis ✅' if _redis_url else 'memory'}")
 
 
-# ── Firewall (blocks known malicious IPs) ─────────────────────
+# ── Firewall & Monitor Trigger ──────────────────────────────
 @app.before_request
-def firewall():
+def before_req():
+    # 1. Firewall (blocks known malicious IPs)
     ip = _real_ip()
     if ip in dbl.get_blocked_ips():
         log_event("BLOCKED_REQUEST", ip=ip)
@@ -87,6 +88,20 @@ def firewall():
             "error": "Your IP is permanently blocked by AEGIS Firewall.",
             "code":  "IP_BLOCKED",
         }), 403
+
+    # 2. Trigger daily monitor if 24h passed
+    # This ensures monitoring runs even on Render's free tier (pauses threads)
+    try:
+        last_run = dbl.get_last_monitor_run()
+        now_ts   = int(time.time())
+        if (now_ts - last_run) > 86400:
+            # Update last_run immediately to prevent concurrent triggers
+            dbl.set_last_monitor_run(now_ts)
+            # Run in a separate thread so it doesn't block the request
+            threading.Thread(target=run_daily_monitor, daemon=True).start()
+            print(f"[AEGIS] Daily monitor triggered by request from {ip}")
+    except Exception as e:
+        print(f"[AEGIS] Monitor trigger error: {e}")
 
 
 # ── Security headers ──────────────────────────────────────────
@@ -97,6 +112,9 @@ def add_security_headers(response):
     response.headers["X-XSS-Protection"]       = "1; mode=block"
     response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
     response.headers["Cache-Control"]          = "no-store"
+    # Production security
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"]   = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:;"
     return response
 
 
