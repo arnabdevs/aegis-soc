@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
-║        AEGIS SOC ENGINE v5.0 — HARDENED EDITION             ║
+║        AEGIS SOC ENGINE v5.2 — HARDENED EDITION             ║
 ║        Owner : Arnab Kumar Das                               ║
 ║        GitHub: https://github.com/arnabdevs                ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -69,6 +69,7 @@ if _redis_url:
             _redis_url = f"redis://{_redis_url}"
         else:
             _redis_url = ""
+    print(f"[AEGIS] Limiter Redis URL: {(_redis_url[:10] + '...') if _redis_url else 'NONE'}")
 
 _limiter_storage = _redis_url if _redis_url else "memory://"
 

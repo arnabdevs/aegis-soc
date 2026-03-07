@@ -41,6 +41,8 @@ if _REDIS_URL and not _is_redis_url(_REDIS_URL):
     else:
         _REDIS_URL = "" # Wrong scheme (e.g. http://)
 
+print(f"[AEGIS] Database Redis URL: {(_REDIS_URL[:10] + '...') if _REDIS_URL else 'NONE'}")
+
 USE_POSTGRES = bool(_DB_URL)
 USE_REDIS    = False # Will be verified below
 
