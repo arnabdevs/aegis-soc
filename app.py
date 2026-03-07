@@ -1,6 +1,6 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
-║        AEGIS SOC ENGINE v5.2 — HARDENED EDITION             ║
+║        AEGIS SOC ENGINE v5.3 — HARDENED EDITION             ║
 ║        Owner : Arnab Kumar Das                               ║
 ║        GitHub: https://github.com/arnabdevs                ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -15,6 +15,8 @@ Upgrades in v5:
 """
 import os
 import datetime
+import time
+import threading
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -73,12 +75,21 @@ if _redis_url:
 
 _limiter_storage = _redis_url if _redis_url else "memory://"
 
-limiter = Limiter(
-    key_func=_real_ip,
-    app=app,
-    default_limits=["500 per day", "100 per hour"],
-    storage_uri=_limiter_storage,
-)
+try:
+    limiter = Limiter(
+        key_func=_real_ip,
+        app=app,
+        default_limits=["500 per day", "100 per hour"],
+        storage_uri=_limiter_storage,
+    )
+except Exception as e:
+    print(f"[AEGIS] Limiter error: {e}. Falling back to memory.")
+    limiter = Limiter(
+        key_func=_real_ip,
+        app=app,
+        default_limits=["500 per day", "100 per hour"],
+        storage_uri="memory://",
+    )
 print(f"[AEGIS] Rate limiter: {'Redis ✅' if _redis_url else 'memory'}")
 
 
