@@ -87,7 +87,7 @@ def _scan_domain(domain: str) -> dict:
 
 def run_daily_monitor():
     """Execute one full cycle of scanning for all users."""
-    import utils.db_core as dbl
+    import utils.database as dbl
     users = dbl.get_all_users()
     print(f"[AEGIS] Daily monitor — {len(users)} users")
 
@@ -200,7 +200,7 @@ def run_daily_monitor():
 
 
 def _daemon_loop():
-    import utils.db_core as dbl
+    import utils.database as dbl
     while True:
         last_run = dbl.get_last_monitor_run()
         now_ts   = int(time.time())
