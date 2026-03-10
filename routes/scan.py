@@ -14,7 +14,7 @@ from services.breach_service import check_email_breach, check_password_pwned
 from utils.scoring_engine    import (
     ai_threat_score, compute_health_score, email_health_score,
 )
-import utils.db_core as dbl
+import utils.database as dbl
 from utils.logger import log_event
 
 scan_bp = Blueprint("scan", __name__)

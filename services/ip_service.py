@@ -40,7 +40,7 @@ def get_abuseipdb(ip: str) -> dict:
             conf = d.get("abuseConfidenceScore", 0)
 
             if conf >= 80:
-                import utils.db_core as dbl
+                import utils.database as dbl
                 dbl.add_blocked_ip(ip, reason=f"AbuseIPDB confidence {conf}%")
                 log_event("AUTO_BLOCK", ip=ip,
                           reason=f"AbuseIPDB confidence {conf}%")
