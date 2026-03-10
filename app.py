@@ -98,6 +98,12 @@ def add_security_headers(response):
     response.headers["Cache-Control"]          = "no-store"
     return response
 
+import traceback
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # This will return the actual exception stack trace to help diagnose the 500 error on Render
+    return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+
 
 # ── Blueprints ────────────────────────────────────────────────
 app.register_blueprint(auth_bp,    url_prefix="/api/auth")
